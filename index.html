@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindfulAI - Mental Health Detection & Support</title>
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1><i class="fas fa-brain"></i> MindfulAI</h1>
+            </div>
+            <div class="theme-toggle">
+                <button id="theme-toggle-btn" class="shutter-toggle" aria-label="Toggle theme" title="Toggle day/night">
+                    <span class="icon sun"><i class="fas fa-sun"></i></span>
+                    <span class="icon moon"><i class="fas fa-moon"></i></span>
+                    <span class="ring"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="landing" id="landing-section">
+            <div class="container">
+                <div class="landing-content">
+                    <h1>AI-Powered Mental Health Support</h1>
+                    <p>Using facial expression recognition to provide personalized mental wellness advice and interventions.</p>
+                    <button id="start-check-btn" class="btn primary-btn">Start Mental Health Check</button>
+                    <p class="privacy-note"><i class="fas fa-shield-alt"></i> Your privacy is important: All processing happens directly in your browser. No data is sent to any server.</p>
+                </div>
+                <div class="landing-image">
+                    <img src="assets/images/mental-health-illustration.svg" alt="Mental Health Illustration">
+                </div>
+            </div>
+        </section>
+
+        <section class="detection hidden" id="detection-section">
+            <div class="container">
+                <h2>Emotion Detection</h2>
+                <div class="webcam-container glass">
+                    <video id="webcam" autoplay muted playsinline></video>
+                    <canvas id="overlay"></canvas>
+                    <div class="loading" id="loading-indicator">
+                        <div class="spinner"></div>
+                        <p>Loading AI models...</p>
+                    </div>
+                </div>
+                <div class="detection-results glass">
+                    <div class="current-emotion">
+                        <h3>Current Emotional State:</h3>
+                        <div class="emotion-display">
+                            <span id="emotion-text">Waiting for detection...</span>
+                            <span id="confidence"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="intervention hidden" id="intervention-section">
+            <div class="container">
+                <h2>Mental Health Insights</h2>
+                <div class="advice-container glass">
+                    <div class="emotion-summary">
+                        <h3>Based on your expression:</h3>
+                        <p id="emotion-summary"></p>
+                    </div>
+                    <div class="recommendations">
+                        <h3>Personalized Recommendations:</h3>
+                        <div id="recommendation-content"></div>
+                    </div>
+                    <div class="exercises">
+                        <h3>Quick Exercises</h3>
+                        <div id="exercises-content"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="history hidden" id="history-section">
+            <div class="container">
+                <h2>Your Mood History</h2>
+                <div class="mood-history" id="mood-history-container">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container glass">
+            <div class="help-resources">
+                <h3>Emergency Help Resources</h3>
+                <ul>
+                    <li><strong>National Suicide Prevention Lifeline:</strong> 1-800-273-8255</li>
+                    <li><strong>Crisis Text Line:</strong> Text HOME to 741741</li>
+                </ul>
+            </div>
+            <div class="disclaimer">
+                <p><strong>Disclaimer:</strong> This application is not a substitute for professional mental health care. If you're experiencing a mental health crisis, please contact a healthcare provider or emergency services.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="navigation-controls">
+        <button id="back-btn" class="btn secondary-btn hidden"><i class="fas fa-arrow-left"></i> Back</button>
+        <button id="continue-btn" class="btn primary-btn hidden">Continue <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <!-- Theme shutter overlay for animated day/night transition -->
+    <div id="theme-shutter" aria-hidden="true"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
