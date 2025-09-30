@@ -50,6 +50,43 @@ function initApp() {
 
     // Load emotion history from localStorage
     loadEmotionHistory();
+
+    // Create dynamic shooting stars for dark mode
+    createShootingStars(10);
+}
+
+// Function to create random shooting stars
+function createShootingStars(num) {
+    for (let i = 0; i < num; i++) {
+        const star = document.createElement('span');
+        star.classList.add('shooting-star');
+
+        // Random position
+        star.style.top = Math.random() * 100 + '%';
+        star.style.left = Math.random() * 100 + '%';
+
+        // Random rotation for direction
+        const angle = Math.random() * 360;
+        star.style.setProperty('--rotation', angle + 'deg');
+
+        // Random size
+        const size = 1 + Math.random() * 2; // 1-3px
+        star.style.setProperty('--size', size + 'px');
+
+        // Random trail length
+        const trailLength = 100 + Math.random() * 200; // 100-300px
+        star.style.setProperty('--trail-length', trailLength + 'px');
+
+        // Random cycle duration for infrequent appearances (10-60s)
+        const cycleDur = 10 + Math.random() * 50;
+        star.style.animationDuration = cycleDur + 's';
+
+        // Random initial delay (negative for starting at random point in animation)
+        const delay = Math.random() * cycleDur;
+        star.style.animationDelay = '-' + delay + 's';
+
+        document.body.appendChild(star);
+    }
 }
 
 // Animated day/night shutter toggle
