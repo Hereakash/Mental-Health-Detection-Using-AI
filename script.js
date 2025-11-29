@@ -5,6 +5,21 @@ let faceDetectionInterval;
 let emotionHistory = [];
 const HISTORY_MAX_LENGTH = 5;
 
+// Chatbot variables
+let chatHistory = [];
+let userData = null;
+let chatAnalysis = {
+    messageCount: 0,
+    detectedEmotions: [],
+    topics: [],
+    overallSentiment: 'neutral',
+    riskLevel: 'low'
+};
+
+// Chatbot typing delay constants (in milliseconds)
+const TYPING_DELAY_MIN = 1000;
+const TYPING_DELAY_MAX = 2000;
+
 // API Base URL (for backend integration)
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -17,16 +32,30 @@ const questionnaireSection = document.getElementById('questionnaire-section');
 const textAnalysisSection = document.getElementById('text-analysis-section');
 const textResultsSection = document.getElementById('text-results-section');
 const questionnaireResultsSection = document.getElementById('questionnaire-results-section');
+const chatbotRegistrationSection = document.getElementById('chatbot-registration-section');
+const chatbotSection = document.getElementById('chatbot-section');
+const reportSection = document.getElementById('report-section');
 
 const startCheckBtn = document.getElementById('start-check-btn');
 const startQuestionnaireBtn = document.getElementById('start-questionnaire-btn');
 const startTextBtn = document.getElementById('start-text-btn');
+const startChatbotBtn = document.getElementById('start-chatbot-btn');
 const submitQuestionnaireBtn = document.getElementById('submit-questionnaire-btn');
 const analyzeTextBtn = document.getElementById('analyze-text-btn');
 const backBtn = document.getElementById('back-btn');
 const continueBtn = document.getElementById('continue-btn');
 const themeToggleBtn = document.getElementById('theme-toggle-btn');
 const themeShutter = document.getElementById('theme-shutter');
+
+// Chatbot elements
+const userRegistrationForm = document.getElementById('user-registration-form');
+const chatMessagesContainer = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const sendMessageBtn = document.getElementById('send-message-btn');
+const generateReportBtn = document.getElementById('generate-report-btn');
+const clearChatBtn = document.getElementById('clear-chat-btn');
+const downloadReportBtn = document.getElementById('download-report-btn');
+const backToChatBtn = document.getElementById('back-to-chat-btn');
 
 const webcamElement = document.getElementById('webcam');
 const overlayCanvas = document.getElementById('overlay');
@@ -54,10 +83,37 @@ function initApp() {
     startCheckBtn.addEventListener('click', startDetection);
     startQuestionnaireBtn.addEventListener('click', startQuestionnaire);
     startTextBtn.addEventListener('click', startTextAnalysis);
+    if (startChatbotBtn) startChatbotBtn.addEventListener('click', startChatbot);
     submitQuestionnaireBtn.addEventListener('click', submitQuestionnaire);
     analyzeTextBtn.addEventListener('click', analyzeText);
     backBtn.addEventListener('click', navigateBack);
     continueBtn.addEventListener('click', navigateForward);
+
+    // Chatbot event listeners
+    if (userRegistrationForm) userRegistrationForm.addEventListener('submit', handleUserRegistration);
+    if (sendMessageBtn) sendMessageBtn.addEventListener('click', sendChatMessage);
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        });
+    }
+    if (generateReportBtn) generateReportBtn.addEventListener('click', generateReport);
+    if (clearChatBtn) clearChatBtn.addEventListener('click', clearChat);
+    if (downloadReportBtn) downloadReportBtn.addEventListener('click', downloadReport);
+    if (backToChatBtn) backToChatBtn.addEventListener('click', backToChat);
+    
+    // Suggestion chips
+    document.querySelectorAll('.suggestion-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            if (chatInput) {
+                chatInput.value = chip.dataset.message;
+                sendChatMessage();
+            }
+        });
+    });
 
     // Animated theme toggle
     themeToggleBtn.addEventListener('click', animatedThemeToggle);
@@ -91,6 +147,10 @@ function initApp() {
 
     // Load emotion history from localStorage
     loadEmotionHistory();
+    
+    // Load user data and chat history from localStorage
+    loadUserData();
+    loadChatHistory();
 
     // Create dynamic shooting stars for dark mode
     createShootingStars(10);
@@ -368,6 +428,21 @@ function navigateBack() {
             showSection(textAnalysisSection);
             hideSection(textResultsSection);
             currentStep = 'text-analysis';
+            break;
+        case 'chatbot-registration':
+            showSection(landingSection);
+            hideSection(chatbotRegistrationSection);
+            currentStep = 'landing';
+            break;
+        case 'chatbot':
+            showSection(landingSection);
+            hideSection(chatbotSection);
+            currentStep = 'landing';
+            break;
+        case 'report':
+            showSection(chatbotSection);
+            hideSection(reportSection);
+            currentStep = 'chatbot';
             break;
     }
 
@@ -865,6 +940,15 @@ function updateNavigationButtons() {
             backBtn.classList.remove('hidden');
             continueBtn.classList.remove('hidden');
             continueBtn.innerHTML = 'View Recommendations <i class="fas fa-arrow-right"></i>';
+            break;
+        case 'chatbot-registration':
+            backBtn.classList.remove('hidden');
+            break;
+        case 'chatbot':
+            backBtn.classList.remove('hidden');
+            break;
+        case 'report':
+            // Navigation handled by report buttons
             break;
     }
 }
@@ -1561,4 +1645,699 @@ function generateInterventionFromText() {
     updateEmotionSummary(dominantEmotion);
     generateRecommendations(dominantEmotion);
     generateExercises(dominantEmotion);
+}
+
+// =====================================================
+// CHATBOT FUNCTIONALITY
+// =====================================================
+
+// Start chatbot
+function startChatbot() {
+    // Check if user data exists
+    if (userData) {
+        // Skip registration, go directly to chat
+        showSection(chatbotSection);
+        hideSection(landingSection);
+        currentStep = 'chatbot';
+        initializeChatbot();
+    } else {
+        // Show registration first
+        showSection(chatbotRegistrationSection);
+        hideSection(landingSection);
+        currentStep = 'chatbot-registration';
+    }
+    updateNavigationButtons();
+}
+
+// Handle user registration
+function handleUserRegistration(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('user-name').value.trim();
+    const email = document.getElementById('user-email').value.trim();
+    const age = document.getElementById('user-age').value;
+    
+    if (!name) {
+        showToast('Please enter your name', 'warning');
+        return;
+    }
+    
+    // Save user data
+    userData = {
+        name: name,
+        email: email || null,
+        age: age || null,
+        createdAt: new Date().toISOString(),
+        lastActive: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    localStorage.setItem('userData', JSON.stringify(userData));
+    
+    // Navigate to chatbot
+    showSection(chatbotSection);
+    hideSection(chatbotRegistrationSection);
+    currentStep = 'chatbot';
+    updateNavigationButtons();
+    
+    // Initialize chatbot with welcome message
+    initializeChatbot();
+    
+    showToast(`Welcome, ${escapeHtml(name)}! Let's chat.`, 'success');
+}
+
+// Initialize chatbot
+function initializeChatbot() {
+    // Display existing chat history if any
+    displayChatHistory();
+    
+    // If no chat history, show welcome message
+    if (chatHistory.length === 0) {
+        const userName = userData ? escapeHtml(userData.name) : '';
+        const welcomeMessage = userData 
+            ? `Hello ${userName}! 👋 I'm your MindfulAI assistant. I'm here to listen and provide support for your mental well-being.\n\nFeel free to share how you're feeling today, or ask me about:\n• Managing stress and anxiety\n• Coping strategies\n• Relaxation techniques\n• General mental health tips\n\nHow can I help you today?`
+            : `Hello! 👋 I'm your MindfulAI assistant. I'm here to listen and provide support for your mental well-being.\n\nHow are you feeling today?`;
+        
+        addBotMessage(welcomeMessage);
+    }
+}
+
+// Load user data from localStorage
+function loadUserData() {
+    const savedUserData = localStorage.getItem('userData');
+    if (savedUserData) {
+        userData = JSON.parse(savedUserData);
+    }
+}
+
+// Load chat history from localStorage
+function loadChatHistory() {
+    const savedChatHistory = localStorage.getItem('chatHistory');
+    if (savedChatHistory) {
+        chatHistory = JSON.parse(savedChatHistory);
+    }
+    
+    const savedAnalysis = localStorage.getItem('chatAnalysis');
+    if (savedAnalysis) {
+        chatAnalysis = JSON.parse(savedAnalysis);
+    }
+}
+
+// Save chat history to localStorage
+function saveChatHistory() {
+    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+    localStorage.setItem('chatAnalysis', JSON.stringify(chatAnalysis));
+}
+
+// Display chat history
+function displayChatHistory() {
+    if (!chatMessagesContainer) return;
+    
+    chatMessagesContainer.innerHTML = '';
+    
+    chatHistory.forEach(message => {
+        const messageDiv = createMessageElement(message);
+        chatMessagesContainer.appendChild(messageDiv);
+    });
+    
+    scrollToBottom();
+}
+
+// Create message element
+function createMessageElement(message) {
+    const div = document.createElement('div');
+    div.className = `chat-message ${message.role}`;
+    
+    const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    div.innerHTML = `
+        <div class="message-content">${formatMessageContent(message.content)}</div>
+        <span class="message-time">${time}</span>
+    `;
+    
+    return div;
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Format message content (convert newlines to HTML)
+function formatMessageContent(content) {
+    // First escape HTML to prevent XSS, then convert formatting
+    return escapeHtml(content)
+        .replace(/\n/g, '<br>')
+        .replace(/•/g, '&bull;')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Convert **bold** to <strong>
+}
+
+// Scroll chat to bottom
+function scrollToBottom() {
+    if (chatMessagesContainer) {
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+    }
+}
+
+// Send chat message
+function sendChatMessage() {
+    const message = chatInput.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message
+    addUserMessage(message);
+    
+    // Clear input
+    chatInput.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Generate response after a short delay (simulates typing)
+    const typingDelay = TYPING_DELAY_MIN + Math.random() * (TYPING_DELAY_MAX - TYPING_DELAY_MIN);
+    setTimeout(() => {
+        hideTypingIndicator();
+        const response = generateChatbotResponse(message);
+        addBotMessage(response);
+    }, typingDelay);
+}
+
+// Add user message
+function addUserMessage(content) {
+    const message = {
+        role: 'user',
+        content: content,
+        timestamp: new Date().toISOString()
+    };
+    
+    chatHistory.push(message);
+    chatAnalysis.messageCount++;
+    
+    // Analyze user message for emotions/topics
+    analyzeUserMessage(content);
+    
+    // Display message
+    const messageDiv = createMessageElement(message);
+    chatMessagesContainer.appendChild(messageDiv);
+    
+    // Save to localStorage
+    saveChatHistory();
+    
+    scrollToBottom();
+}
+
+// Add bot message
+function addBotMessage(content) {
+    const message = {
+        role: 'bot',
+        content: content,
+        timestamp: new Date().toISOString()
+    };
+    
+    chatHistory.push(message);
+    
+    // Display message
+    const messageDiv = createMessageElement(message);
+    chatMessagesContainer.appendChild(messageDiv);
+    
+    // Save to localStorage
+    saveChatHistory();
+    
+    scrollToBottom();
+}
+
+// Show typing indicator
+function showTypingIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'typing-indicator';
+    indicator.id = 'typing-indicator';
+    indicator.innerHTML = '<span></span><span></span><span></span>';
+    chatMessagesContainer.appendChild(indicator);
+    scrollToBottom();
+}
+
+// Hide typing indicator
+function hideTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    if (indicator) indicator.remove();
+}
+
+// Analyze user message for emotions and topics
+function analyzeUserMessage(message) {
+    const lowerMessage = message.toLowerCase();
+    
+    // Detect emotions
+    const emotionKeywords = {
+        happy: ['happy', 'joy', 'excited', 'great', 'wonderful', 'amazing', 'good'],
+        sad: ['sad', 'depressed', 'down', 'unhappy', 'miserable', 'crying'],
+        anxious: ['anxious', 'worried', 'nervous', 'scared', 'panic', 'fear'],
+        stressed: ['stressed', 'overwhelmed', 'pressure', 'exhausted', 'tired'],
+        angry: ['angry', 'frustrated', 'annoyed', 'mad', 'irritated'],
+        lonely: ['lonely', 'alone', 'isolated', 'nobody', 'no one']
+    };
+    
+    for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
+        for (const keyword of keywords) {
+            if (lowerMessage.includes(keyword)) {
+                if (!chatAnalysis.detectedEmotions.includes(emotion)) {
+                    chatAnalysis.detectedEmotions.push(emotion);
+                }
+            }
+        }
+    }
+    
+    // Detect topics
+    const topicKeywords = {
+        work: ['work', 'job', 'boss', 'colleague', 'career', 'office'],
+        relationships: ['relationship', 'partner', 'friend', 'family', 'marriage'],
+        health: ['health', 'sleep', 'eating', 'exercise', 'body'],
+        self_esteem: ['confident', 'worth', 'value', 'myself', 'self-esteem'],
+        future: ['future', 'goals', 'plans', 'worry about']
+    };
+    
+    for (const [topic, keywords] of Object.entries(topicKeywords)) {
+        for (const keyword of keywords) {
+            if (lowerMessage.includes(keyword)) {
+                if (!chatAnalysis.topics.includes(topic)) {
+                    chatAnalysis.topics.push(topic);
+                }
+            }
+        }
+    }
+    
+    // Update risk level based on concerning keywords
+    const highRiskKeywords = ['suicide', 'kill myself', 'end my life', 'want to die', 'harm myself'];
+    const moderateRiskKeywords = ['hopeless', 'worthless', 'no point', 'give up'];
+    
+    for (const keyword of highRiskKeywords) {
+        if (lowerMessage.includes(keyword)) {
+            chatAnalysis.riskLevel = 'high';
+            break;
+        }
+    }
+    
+    if (chatAnalysis.riskLevel !== 'high') {
+        for (const keyword of moderateRiskKeywords) {
+            if (lowerMessage.includes(keyword)) {
+                chatAnalysis.riskLevel = 'moderate';
+                break;
+            }
+        }
+    }
+    
+    // Update overall sentiment
+    const positiveWords = ['happy', 'good', 'great', 'better', 'wonderful', 'love', 'excited'];
+    const negativeWords = ['sad', 'bad', 'terrible', 'awful', 'hate', 'angry', 'depressed'];
+    
+    let positiveCount = 0;
+    let negativeCount = 0;
+    
+    positiveWords.forEach(word => {
+        if (lowerMessage.includes(word)) positiveCount++;
+    });
+    
+    negativeWords.forEach(word => {
+        if (lowerMessage.includes(word)) negativeCount++;
+    });
+    
+    if (positiveCount > negativeCount) {
+        chatAnalysis.overallSentiment = 'positive';
+    } else if (negativeCount > positiveCount) {
+        chatAnalysis.overallSentiment = 'negative';
+    }
+}
+
+// Generate chatbot response
+function generateChatbotResponse(userMessage) {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Check for high-risk messages first
+    const highRiskKeywords = ['suicide', 'kill myself', 'end my life', 'want to die', 'harm myself'];
+    for (const keyword of highRiskKeywords) {
+        if (lowerMessage.includes(keyword)) {
+            return `I'm really concerned about what you've shared. Your life matters, and there are people who want to help. 💙\n\n🆘 Please reach out immediately:\n• National Suicide Prevention Lifeline: 988 or 1-800-273-8255\n• Crisis Text Line: Text HOME to 741741\n• International Association for Suicide Prevention: https://www.iasp.info/resources/Crisis_Centres/\n\nYou don't have to face this alone. Would you like to talk more about what's been happening?`;
+        }
+    }
+    
+    // Check for greetings
+    const greetings = ['hello', 'hi', 'hey', 'good morning', 'good evening', 'good afternoon'];
+    for (const greeting of greetings) {
+        if (lowerMessage.includes(greeting)) {
+            return `Hello! ${userData ? userData.name + ', ' : ''}I'm glad you're here. How are you feeling today? Feel free to share what's on your mind.`;
+        }
+    }
+    
+    // Check for gratitude/goodbye
+    if (lowerMessage.includes('thank') || lowerMessage.includes('thanks')) {
+        return `You're welcome! 😊 Remember, taking time to check in with yourself is an important step in maintaining mental wellness. Is there anything else I can help you with?`;
+    }
+    
+    if (lowerMessage.includes('bye') || lowerMessage.includes('goodbye')) {
+        return `Take care of yourself! Remember, you can always come back when you need someone to talk to. 💙 Stay well!`;
+    }
+    
+    // Check for specific emotions/topics
+    if (lowerMessage.includes('anxious') || lowerMessage.includes('anxiety') || lowerMessage.includes('worried')) {
+        return `I hear that you're experiencing anxiety. That can be really uncomfortable. 💭\n\nHere are some techniques that might help:\n\n• **Deep Breathing**: Try the 4-7-8 technique - breathe in for 4 seconds, hold for 7, exhale for 8\n• **Grounding**: Name 5 things you can see, 4 you can touch, 3 you can hear, 2 you can smell, 1 you can taste\n• **Progressive Muscle Relaxation**: Tense and release each muscle group\n\nWould you like me to guide you through any of these exercises?`;
+    }
+    
+    if (lowerMessage.includes('sad') || lowerMessage.includes('depressed') || lowerMessage.includes('down')) {
+        return `I'm sorry to hear you're feeling down. Your feelings are valid, and it takes courage to acknowledge them. 💙\n\nSome things that might help:\n\n• **Small steps**: Even a short walk or listening to music you love can help\n• **Connect**: Reach out to someone you trust, even just to say hi\n• **Self-compassion**: Treat yourself with the kindness you'd show a friend\n• **Professional support**: Consider speaking with a counselor if these feelings persist\n\nWould you like to tell me more about what's been making you feel this way?`;
+    }
+    
+    if (lowerMessage.includes('stress') || lowerMessage.includes('stressed') || lowerMessage.includes('overwhelmed')) {
+        return `Stress can feel really overwhelming. Let's work through this together. 🌟\n\n**Immediate relief:**\n• Take 3 slow, deep breaths right now\n• Step away from what's stressing you for 5 minutes\n• Splash some cool water on your face\n\n**Longer-term strategies:**\n• Break big tasks into smaller, manageable steps\n• Prioritize and let go of what's not essential\n• Make time for activities you enjoy\n• Consider setting boundaries\n\nWhat's the main source of your stress right now?`;
+    }
+    
+    if (lowerMessage.includes('sleep') || lowerMessage.includes('insomnia') || lowerMessage.includes('can\'t sleep')) {
+        return `Sleep problems can really affect how we feel. Here are some evidence-based tips:\n\n**Sleep Hygiene:**\n• Keep a consistent sleep schedule, even on weekends\n• Avoid screens 1 hour before bed\n• Keep your bedroom cool and dark\n• Limit caffeine after noon\n\n**Relaxation:**\n• Try a body scan meditation before bed\n• Progressive muscle relaxation\n• Calming music or white noise\n\nHow long have you been having trouble sleeping?`;
+    }
+    
+    if (lowerMessage.includes('lonely') || lowerMessage.includes('alone') || lowerMessage.includes('isolated')) {
+        return `Feeling lonely can be really painful, and it's more common than you might think. 💙\n\n**Ways to connect:**\n• Reach out to an old friend or family member\n• Join a community group or class\n• Volunteer for a cause you care about\n• Consider online communities around your interests\n\n**Self-connection:**\n• Spend time doing activities you enjoy\n• Practice self-compassion\n• Remember that being alone and feeling lonely are different\n\nWould you like to talk about what's contributing to these feelings?`;
+    }
+    
+    if (lowerMessage.includes('angry') || lowerMessage.includes('frustrated') || lowerMessage.includes('mad')) {
+        return `Anger is a natural emotion, and it's okay to feel frustrated. 🌿\n\n**Immediate techniques:**\n• Take a pause before reacting\n• Count to 10 slowly\n• Deep breathing\n• Physical activity like a brisk walk\n\n**Processing anger:**\n• Identify what triggered the feeling\n• Express your feelings constructively\n• Consider the other perspective\n• Write about it\n\nWhat's been making you feel this way?`;
+    }
+    
+    if (lowerMessage.includes('help') || lowerMessage.includes('what can you do')) {
+        return `I'm here to support your mental well-being! Here's how I can help:\n\n🗣️ **Talk**: Share your feelings and concerns\n💡 **Suggestions**: Get coping strategies and tips\n😊 **Techniques**: Learn relaxation and mindfulness exercises\n📊 **Track**: I analyze our conversations to provide personalized insights\n📄 **Reports**: Generate a summary of your mental health journey\n\nWhat would you like to focus on today?`;
+    }
+    
+    // Default empathetic response
+    const responses = [
+        `Thank you for sharing that with me. I'm here to listen. Can you tell me more about how that makes you feel?`,
+        `I appreciate you opening up. It takes courage to talk about these things. What else is on your mind?`,
+        `I hear you. Your feelings are valid. Would you like to explore some coping strategies together?`,
+        `It sounds like you're going through a lot. Remember, it's okay to take things one step at a time. What would help you most right now?`,
+        `Thank you for trusting me with this. How have you been coping with these feelings so far?`
+    ];
+    
+    return responses[Math.floor(Math.random() * responses.length)];
+}
+
+// Clear chat history
+function clearChat() {
+    if (confirm('Are you sure you want to clear your chat history? This cannot be undone.')) {
+        chatHistory = [];
+        chatAnalysis = {
+            messageCount: 0,
+            detectedEmotions: [],
+            topics: [],
+            overallSentiment: 'neutral',
+            riskLevel: 'low'
+        };
+        
+        localStorage.removeItem('chatHistory');
+        localStorage.removeItem('chatAnalysis');
+        
+        chatMessagesContainer.innerHTML = '';
+        initializeChatbot();
+        
+        showToast('Chat history cleared', 'success');
+    }
+}
+
+// Generate report
+function generateReport() {
+    if (chatHistory.length < 2) {
+        showToast('Please have a conversation first to generate a report.', 'warning');
+        return;
+    }
+    
+    const reportContent = document.getElementById('report-content');
+    
+    const reportDate = new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    const userMessageCount = chatHistory.filter(m => m.role === 'user').length;
+    
+    // Generate recommendations based on analysis
+    const recommendations = generateReportRecommendations();
+    
+    // Escape user data for safe HTML insertion
+    const safeName = userData ? escapeHtml(userData.name) : 'Anonymous';
+    const safeEmail = userData && userData.email ? escapeHtml(userData.email) : '';
+    const safeAge = userData && userData.age ? escapeHtml(String(userData.age)) : '';
+    
+    reportContent.innerHTML = `
+        <div class="report-header">
+            <h3>Mental Health Assessment Report</h3>
+            <p class="report-date">${reportDate}</p>
+        </div>
+        
+        <div class="report-section">
+            <h4><i class="fas fa-user"></i> User Information</h4>
+            <div class="report-item">
+                <span class="label">Name:</span>
+                <span class="value">${safeName}</span>
+            </div>
+            ${safeEmail ? `
+            <div class="report-item">
+                <span class="label">Email:</span>
+                <span class="value">${safeEmail}</span>
+            </div>
+            ` : ''}
+            ${safeAge ? `
+            <div class="report-item">
+                <span class="label">Age:</span>
+                <span class="value">${safeAge}</span>
+            </div>
+            ` : ''}
+            <div class="report-item">
+                <span class="label">Session Date:</span>
+                <span class="value">${reportDate}</span>
+            </div>
+        </div>
+        
+        <div class="report-section">
+            <h4><i class="fas fa-chart-line"></i> Conversation Analysis</h4>
+            <div class="report-item">
+                <span class="label">Total Messages:</span>
+                <span class="value">${userMessageCount}</span>
+            </div>
+            <div class="report-item">
+                <span class="label">Overall Sentiment:</span>
+                <span class="value" style="color: ${getSentimentColor(chatAnalysis.overallSentiment)}; text-transform: capitalize;">
+                    ${escapeHtml(chatAnalysis.overallSentiment)}
+                </span>
+            </div>
+            <div class="report-item">
+                <span class="label">Risk Assessment:</span>
+                <span class="value" style="color: ${getRiskColor(chatAnalysis.riskLevel)}; text-transform: capitalize;">
+                    ${escapeHtml(chatAnalysis.riskLevel)}
+                </span>
+            </div>
+        </div>
+        
+        ${chatAnalysis.detectedEmotions.length > 0 ? `
+        <div class="report-section">
+            <h4><i class="fas fa-heart"></i> Detected Emotions</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                ${chatAnalysis.detectedEmotions.map(emotion => `
+                    <span class="condition-badge" style="background: rgba(94, 114, 228, 0.15); color: #5e72e4; text-transform: capitalize;">
+                        ${emotion}
+                    </span>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
+        
+        ${chatAnalysis.topics.length > 0 ? `
+        <div class="report-section">
+            <h4><i class="fas fa-tags"></i> Topics Discussed</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                ${chatAnalysis.topics.map(topic => `
+                    <span class="condition-badge" style="background: rgba(45, 206, 137, 0.15); color: #2dce89; text-transform: capitalize;">
+                        ${topic.replace('_', ' ')}
+                    </span>
+                `).join('')}
+            </div>
+        </div>
+        ` : ''}
+        
+        <div class="report-section">
+            <h4><i class="fas fa-lightbulb"></i> Recommendations</h4>
+            <ul class="report-recommendations">
+                ${recommendations.map(rec => `
+                    <li><i class="fas fa-check-circle"></i> ${rec}</li>
+                `).join('')}
+            </ul>
+        </div>
+        
+        <div class="report-summary">
+            <p><strong>Summary:</strong> ${generateReportSummary()}</p>
+        </div>
+        
+        <div class="report-section" style="margin-top: 1.5rem; background: rgba(245, 54, 92, 0.1); border-left: 4px solid var(--danger-color);">
+            <h4 style="color: var(--danger-color);"><i class="fas fa-exclamation-triangle"></i> Important Disclaimer</h4>
+            <p style="font-size: 0.9rem;">This report is generated by an AI chatbot and is not a professional medical diagnosis. If you are experiencing mental health difficulties, please consult with a qualified mental health professional.</p>
+        </div>
+    `;
+    
+    showSection(reportSection);
+    hideSection(chatbotSection);
+    currentStep = 'report';
+    updateNavigationButtons();
+}
+
+// Generate recommendations based on chat analysis
+function generateReportRecommendations() {
+    const recommendations = [];
+    
+    if (chatAnalysis.detectedEmotions.includes('anxious')) {
+        recommendations.push('Practice daily relaxation techniques such as deep breathing or meditation');
+        recommendations.push('Consider limiting caffeine intake and establishing a calming bedtime routine');
+    }
+    
+    if (chatAnalysis.detectedEmotions.includes('sad') || chatAnalysis.detectedEmotions.includes('depressed')) {
+        recommendations.push('Engage in activities that bring you joy, even small ones');
+        recommendations.push('Maintain social connections and reach out to supportive friends or family');
+        recommendations.push('Consider speaking with a mental health professional');
+    }
+    
+    if (chatAnalysis.detectedEmotions.includes('stressed')) {
+        recommendations.push('Prioritize tasks and break large projects into smaller, manageable steps');
+        recommendations.push('Schedule regular breaks and time for self-care activities');
+    }
+    
+    if (chatAnalysis.detectedEmotions.includes('lonely')) {
+        recommendations.push('Join community groups or activities aligned with your interests');
+        recommendations.push('Consider volunteering as a way to connect with others');
+    }
+    
+    if (chatAnalysis.topics.includes('sleep') || chatAnalysis.topics.includes('health')) {
+        recommendations.push('Maintain a consistent sleep schedule and practice good sleep hygiene');
+        recommendations.push('Regular physical activity can significantly improve mental well-being');
+    }
+    
+    // Default recommendations
+    if (recommendations.length === 0) {
+        recommendations.push('Continue practicing self-awareness and emotional check-ins');
+        recommendations.push('Maintain healthy lifestyle habits including regular exercise and balanced nutrition');
+        recommendations.push('Build and nurture supportive relationships');
+    }
+    
+    if (chatAnalysis.riskLevel === 'moderate' || chatAnalysis.riskLevel === 'high') {
+        recommendations.unshift('Consider scheduling an appointment with a mental health professional for support');
+    }
+    
+    return recommendations;
+}
+
+// Generate report summary
+function generateReportSummary() {
+    if (chatAnalysis.riskLevel === 'high') {
+        return 'Based on our conversation, there are some significant concerns that would benefit from professional support. Please consider reaching out to a mental health professional or crisis helpline.';
+    } else if (chatAnalysis.riskLevel === 'moderate') {
+        return 'Our conversation indicates some areas that may benefit from additional support. The recommendations above may help, and speaking with a counselor could provide further guidance.';
+    } else if (chatAnalysis.overallSentiment === 'negative') {
+        return 'While some challenges were discussed, there are effective strategies that can help. Consider implementing the recommendations above and continuing to monitor your well-being.';
+    } else {
+        return 'Thank you for taking the time to check in with your mental health. Continue to practice self-care and maintain awareness of your emotional well-being.';
+    }
+}
+
+// Get sentiment color
+function getSentimentColor(sentiment) {
+    switch (sentiment) {
+        case 'positive': return 'var(--success-color)';
+        case 'negative': return 'var(--warning-color)';
+        default: return 'var(--secondary-color)';
+    }
+}
+
+// Get risk color
+function getRiskColor(risk) {
+    switch (risk) {
+        case 'low': return 'var(--success-color)';
+        case 'moderate': return 'var(--warning-color)';
+        case 'high': return 'var(--danger-color)';
+        default: return 'var(--secondary-color)';
+    }
+}
+
+// Download report as text file
+function downloadReport() {
+    const reportContent = document.getElementById('report-content');
+    if (!reportContent) return;
+    
+    const reportDate = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    let textContent = `MENTAL HEALTH ASSESSMENT REPORT
+================================
+Generated: ${reportDate}
+
+USER INFORMATION
+----------------
+Name: ${userData ? userData.name : 'Anonymous'}
+${userData && userData.email ? `Email: ${userData.email}` : ''}
+${userData && userData.age ? `Age: ${userData.age}` : ''}
+
+CONVERSATION ANALYSIS
+--------------------
+Total Messages: ${chatHistory.filter(m => m.role === 'user').length}
+Overall Sentiment: ${chatAnalysis.overallSentiment}
+Risk Assessment: ${chatAnalysis.riskLevel}
+
+${chatAnalysis.detectedEmotions.length > 0 ? `DETECTED EMOTIONS
+-----------------
+${chatAnalysis.detectedEmotions.join(', ')}
+` : ''}
+
+${chatAnalysis.topics.length > 0 ? `TOPICS DISCUSSED
+----------------
+${chatAnalysis.topics.map(t => t.replace('_', ' ')).join(', ')}
+` : ''}
+
+RECOMMENDATIONS
+---------------
+${generateReportRecommendations().map((rec, i) => `${i + 1}. ${rec}`).join('\n')}
+
+SUMMARY
+-------
+${generateReportSummary()}
+
+DISCLAIMER
+----------
+This report is generated by an AI chatbot and is not a professional medical diagnosis. 
+If you are experiencing mental health difficulties, please consult with a qualified mental health professional.
+
+Emergency Resources:
+- National Suicide Prevention Lifeline: 988 or 1-800-273-8255
+- Crisis Text Line: Text HOME to 741741
+`;
+
+    // Create and download file
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mental-health-report-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('Report downloaded successfully!', 'success');
+}
+
+// Back to chat from report
+function backToChat() {
+    showSection(chatbotSection);
+    hideSection(reportSection);
+    currentStep = 'chatbot';
+    updateNavigationButtons();
 }

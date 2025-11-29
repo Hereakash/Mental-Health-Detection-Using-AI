@@ -35,6 +35,12 @@
                     <div class="assessment-options">
                         <h3>Choose Your Assessment Method</h3>
                         <div class="option-cards">
+                            <div class="option-card glass" id="chatbot-option">
+                                <i class="fas fa-robot"></i>
+                                <h4>AI Chatbot</h4>
+                                <p>Chat with our AI for personalized mental health support</p>
+                                <button class="btn primary-btn" id="start-chatbot-btn">Start Chatting</button>
+                            </div>
                             <div class="option-card glass" id="questionnaire-option">
                                 <i class="fas fa-clipboard-list"></i>
                                 <h4>Questionnaire</h4>
@@ -64,7 +70,100 @@
             </div>
         </section>
         
-        <!-- Questionnaire Section -->
+        <!-- Chatbot User Registration Section -->
+        <section class="chatbot-registration hidden" id="chatbot-registration-section">
+            <div class="container">
+                <h2><i class="fas fa-user-plus"></i> Create Your Profile</h2>
+                <div class="registration-container glass">
+                    <div class="registration-intro">
+                        <p>Please provide your details to personalize your experience. Your information is stored locally and helps us provide better support.</p>
+                    </div>
+                    
+                    <form id="user-registration-form">
+                        <div class="form-group">
+                            <label for="user-name"><i class="fas fa-user"></i> Your Name</label>
+                            <input type="text" id="user-name" placeholder="Enter your name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-email"><i class="fas fa-envelope"></i> Email (Optional)</label>
+                            <input type="email" id="user-email" placeholder="Enter your email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-age"><i class="fas fa-calendar"></i> Age (Optional)</label>
+                            <input type="number" id="user-age" placeholder="Enter your age" min="13" max="120">
+                        </div>
+                        
+                        <div class="form-submit">
+                            <button type="submit" class="btn primary-btn">
+                                <i class="fas fa-arrow-right"></i> Continue to Chat
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Chatbot Section -->
+        <section class="chatbot hidden" id="chatbot-section">
+            <div class="container">
+                <div class="chatbot-header">
+                    <h2><i class="fas fa-robot"></i> MindfulAI Assistant</h2>
+                    <div class="chatbot-actions">
+                        <button class="btn secondary-btn" id="generate-report-btn">
+                            <i class="fas fa-file-alt"></i> Generate Report
+                        </button>
+                        <button class="btn secondary-btn" id="clear-chat-btn">
+                            <i class="fas fa-trash"></i> Clear Chat
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chatbot-container glass">
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="chat-suggestions" id="chat-suggestions">
+                            <span class="suggestion-chip" data-message="I am feeling stressed lately">I am feeling stressed</span>
+                            <span class="suggestion-chip" data-message="I need help with anxiety">Help with anxiety</span>
+                            <span class="suggestion-chip" data-message="I have been feeling sad">Feeling sad</span>
+                            <span class="suggestion-chip" data-message="I want to feel better">Want to feel better</span>
+                        </div>
+                        <div class="chat-input-wrapper">
+                            <textarea id="chat-input" placeholder="Type your message here... Share how you are feeling today." rows="2"></textarea>
+                            <button class="send-btn" id="send-message-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-disclaimer">
+                    <p><i class="fas fa-info-circle"></i> This AI chatbot provides supportive conversation and suggestions. It is not a replacement for professional mental health care.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Report Section -->
+        <section class="report hidden" id="report-section">
+            <div class="container">
+                <h2><i class="fas fa-file-medical-alt"></i> Your Mental Health Report</h2>
+                <div class="report-container glass" id="report-content">
+                    <!-- Report will be populated by JavaScript -->
+                </div>
+                <div class="report-actions">
+                    <button class="btn primary-btn" id="download-report-btn">
+                        <i class="fas fa-download"></i> Download Report
+                    </button>
+                    <button class="btn secondary-btn" id="back-to-chat-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Chat
+                    </button>
+                </div>
+            </div>
+        </section>
         <section class="questionnaire hidden" id="questionnaire-section">
             <div class="container">
                 <h2><i class="fas fa-clipboard-list"></i> Mental Health Assessment</h2>
