@@ -5,13 +5,24 @@ let faceDetectionInterval;
 let emotionHistory = [];
 const HISTORY_MAX_LENGTH = 5;
 
+// API Base URL (for backend integration)
+const API_BASE_URL = 'http://localhost:5000/api';
+
 // DOM Elements
 const landingSection = document.getElementById('landing-section');
 const detectionSection = document.getElementById('detection-section');
 const interventionSection = document.getElementById('intervention-section');
 const historySection = document.getElementById('history-section');
+const questionnaireSection = document.getElementById('questionnaire-section');
+const textAnalysisSection = document.getElementById('text-analysis-section');
+const textResultsSection = document.getElementById('text-results-section');
+const questionnaireResultsSection = document.getElementById('questionnaire-results-section');
 
 const startCheckBtn = document.getElementById('start-check-btn');
+const startQuestionnaireBtn = document.getElementById('start-questionnaire-btn');
+const startTextBtn = document.getElementById('start-text-btn');
+const submitQuestionnaireBtn = document.getElementById('submit-questionnaire-btn');
+const analyzeTextBtn = document.getElementById('analyze-text-btn');
 const backBtn = document.getElementById('back-btn');
 const continueBtn = document.getElementById('continue-btn');
 const themeToggleBtn = document.getElementById('theme-toggle-btn');
@@ -27,6 +38,11 @@ const recommendationContent = document.getElementById('recommendation-content');
 const exercisesContent = document.getElementById('exercises-content');
 const moodHistoryContainer = document.getElementById('mood-history-container');
 
+// Text analysis elements
+const feelingsText = document.getElementById('feelings-text');
+const wordCountDisplay = document.getElementById('word-count');
+const charCountDisplay = document.getElementById('char-count');
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -36,11 +52,20 @@ document.addEventListener('DOMContentLoaded', () => {
 function initApp() {
     // Set up event listeners
     startCheckBtn.addEventListener('click', startDetection);
+    startQuestionnaireBtn.addEventListener('click', startQuestionnaire);
+    startTextBtn.addEventListener('click', startTextAnalysis);
+    submitQuestionnaireBtn.addEventListener('click', submitQuestionnaire);
+    analyzeTextBtn.addEventListener('click', analyzeText);
     backBtn.addEventListener('click', navigateBack);
     continueBtn.addEventListener('click', navigateForward);
 
     // Animated theme toggle
     themeToggleBtn.addEventListener('click', animatedThemeToggle);
+    
+    // Text input listeners
+    if (feelingsText) {
+        feelingsText.addEventListener('input', updateTextStats);
+    }
 
     // Load theme preference from localStorage
     const savedTheme = localStorage.getItem('theme');
@@ -308,6 +333,26 @@ function navigateBack() {
             hideSection(historySection);
             currentStep = 'intervention';
             break;
+        case 'questionnaire':
+            showSection(landingSection);
+            hideSection(questionnaireSection);
+            currentStep = 'landing';
+            break;
+        case 'questionnaire-results':
+            showSection(questionnaireSection);
+            hideSection(questionnaireResultsSection);
+            currentStep = 'questionnaire';
+            break;
+        case 'text-analysis':
+            showSection(landingSection);
+            hideSection(textAnalysisSection);
+            currentStep = 'landing';
+            break;
+        case 'text-results':
+            showSection(textAnalysisSection);
+            hideSection(textResultsSection);
+            currentStep = 'text-analysis';
+            break;
     }
 
     updateNavigationButtons();
@@ -334,6 +379,18 @@ function navigateForward() {
             showSection(landingSection);
             hideSection(historySection);
             currentStep = 'landing';
+            break;
+        case 'questionnaire-results':
+            showSection(interventionSection);
+            hideSection(questionnaireResultsSection);
+            generateInterventionFromQuestionnaire();
+            currentStep = 'intervention';
+            break;
+        case 'text-results':
+            showSection(interventionSection);
+            hideSection(textResultsSection);
+            generateInterventionFromText();
+            currentStep = 'intervention';
             break;
     }
 
@@ -770,12 +827,28 @@ function updateNavigationButtons() {
         case 'intervention':
             backBtn.classList.remove('hidden');
             continueBtn.classList.remove('hidden');
-            continueBtn.textContent = 'View History';
+            continueBtn.innerHTML = 'View History <i class="fas fa-arrow-right"></i>';
             break;
         case 'history':
             backBtn.classList.remove('hidden');
             continueBtn.classList.remove('hidden');
-            continueBtn.textContent = 'Start Over';
+            continueBtn.innerHTML = 'Start Over <i class="fas fa-redo"></i>';
+            break;
+        case 'questionnaire':
+            backBtn.classList.remove('hidden');
+            break;
+        case 'questionnaire-results':
+            backBtn.classList.remove('hidden');
+            continueBtn.classList.remove('hidden');
+            continueBtn.innerHTML = 'View Recommendations <i class="fas fa-arrow-right"></i>';
+            break;
+        case 'text-analysis':
+            backBtn.classList.remove('hidden');
+            break;
+        case 'text-results':
+            backBtn.classList.remove('hidden');
+            continueBtn.classList.remove('hidden');
+            continueBtn.innerHTML = 'View Recommendations <i class="fas fa-arrow-right"></i>';
             break;
     }
 }
@@ -783,3 +856,591 @@ function updateNavigationButtons() {
 // Create placeholder for face-api models directory
 // This simulates the models directory that should contain face-api.js models
 // In a real environment, these would be downloaded from face-api.js GitHub
+
+// =====================================================
+// QUESTIONNAIRE FUNCTIONALITY
+// =====================================================
+
+// Start the questionnaire assessment
+function startQuestionnaire() {
+    showSection(questionnaireSection);
+    hideSection(landingSection);
+    currentStep = 'questionnaire';
+    updateNavigationButtons();
+}
+
+// Submit and analyze questionnaire responses
+function submitQuestionnaire() {
+    // Collect PHQ-9 responses
+    const phq9Responses = [];
+    for (let i = 1; i <= 9; i++) {
+        const selected = document.querySelector(`input[name="phq9-${i}"]:checked`);
+        if (selected) {
+            phq9Responses.push(parseInt(selected.value));
+        }
+    }
+    
+    // Collect GAD-7 responses
+    const gad7Responses = [];
+    for (let i = 1; i <= 7; i++) {
+        const selected = document.querySelector(`input[name="gad7-${i}"]:checked`);
+        if (selected) {
+            gad7Responses.push(parseInt(selected.value));
+        }
+    }
+    
+    // Validate that all questions are answered
+    if (phq9Responses.length < 9 || gad7Responses.length < 7) {
+        alert('Please answer all questions before submitting.');
+        return;
+    }
+    
+    // Analyze responses locally (client-side)
+    const results = analyzeQuestionnaireResponses({
+        phq9: phq9Responses,
+        gad7: gad7Responses
+    });
+    
+    // Display results
+    displayQuestionnaireResults(results);
+    
+    // Navigate to results section
+    showSection(questionnaireResultsSection);
+    hideSection(questionnaireSection);
+    currentStep = 'questionnaire-results';
+    updateNavigationButtons();
+}
+
+// Analyze questionnaire responses (client-side implementation)
+function analyzeQuestionnaireResponses(responses) {
+    const result = {
+        scores: {},
+        severity: {},
+        risk_level: 'low',
+        conditions_detected: [],
+        recommendations_priority: []
+    };
+    
+    // PHQ-9 Analysis
+    const phq9Score = responses.phq9.reduce((a, b) => a + b, 0);
+    result.scores.depression = phq9Score;
+    
+    // PHQ-9 Severity
+    if (phq9Score <= 4) {
+        result.severity.depression = 'minimal';
+    } else if (phq9Score <= 9) {
+        result.severity.depression = 'mild';
+    } else if (phq9Score <= 14) {
+        result.severity.depression = 'moderate';
+        result.conditions_detected.push('depression');
+    } else if (phq9Score <= 19) {
+        result.severity.depression = 'moderately_severe';
+        result.conditions_detected.push('depression');
+        result.risk_level = 'moderate';
+    } else {
+        result.severity.depression = 'severe';
+        result.conditions_detected.push('depression');
+        result.risk_level = 'high';
+    }
+    
+    // GAD-7 Analysis
+    const gad7Score = responses.gad7.reduce((a, b) => a + b, 0);
+    result.scores.anxiety = gad7Score;
+    
+    // GAD-7 Severity
+    if (gad7Score <= 4) {
+        result.severity.anxiety = 'minimal';
+    } else if (gad7Score <= 9) {
+        result.severity.anxiety = 'mild';
+    } else if (gad7Score <= 14) {
+        result.severity.anxiety = 'moderate';
+        result.conditions_detected.push('anxiety');
+        if (result.risk_level === 'low') result.risk_level = 'moderate';
+    } else {
+        result.severity.anxiety = 'severe';
+        result.conditions_detected.push('anxiety');
+        result.risk_level = 'high';
+    }
+    
+    // Check for suicidal ideation (Question 9 of PHQ-9)
+    if (responses.phq9[8] > 0) {
+        result.risk_level = 'high';
+        result.recommendations_priority.push('immediate_professional_help');
+        result.recommendations_priority.push('crisis_resources');
+    }
+    
+    return result;
+}
+
+// Display questionnaire results
+function displayQuestionnaireResults(results) {
+    // Update PHQ-9 score display
+    const phq9ScoreEl = document.getElementById('phq9-score');
+    const phq9BarEl = document.getElementById('phq9-bar');
+    const phq9SeverityEl = document.getElementById('phq9-severity');
+    
+    if (phq9ScoreEl) {
+        phq9ScoreEl.textContent = results.scores.depression;
+        phq9BarEl.style.width = `${(results.scores.depression / 27) * 100}%`;
+        phq9SeverityEl.textContent = formatSeverity(results.severity.depression);
+        phq9SeverityEl.className = `severity-label ${results.severity.depression}`;
+    }
+    
+    // Update GAD-7 score display
+    const gad7ScoreEl = document.getElementById('gad7-score');
+    const gad7BarEl = document.getElementById('gad7-bar');
+    const gad7SeverityEl = document.getElementById('gad7-severity');
+    
+    if (gad7ScoreEl) {
+        gad7ScoreEl.textContent = results.scores.anxiety;
+        gad7BarEl.style.width = `${(results.scores.anxiety / 21) * 100}%`;
+        gad7SeverityEl.textContent = formatSeverity(results.severity.anxiety);
+        gad7SeverityEl.className = `severity-label ${results.severity.anxiety}`;
+    }
+    
+    // Update overall risk
+    const overallRiskEl = document.getElementById('overall-risk');
+    const assessmentSummaryEl = document.getElementById('assessment-summary');
+    
+    if (overallRiskEl) {
+        overallRiskEl.textContent = `${results.risk_level.charAt(0).toUpperCase() + results.risk_level.slice(1)} Risk`;
+        overallRiskEl.className = `assessment-level ${results.risk_level}`;
+    }
+    
+    if (assessmentSummaryEl) {
+        assessmentSummaryEl.textContent = generateAssessmentSummary(results);
+    }
+    
+    // Update conditions detected
+    const conditionsListEl = document.getElementById('conditions-list');
+    if (conditionsListEl) {
+        if (results.conditions_detected.length === 0) {
+            conditionsListEl.innerHTML = `
+                <div class="no-conditions">
+                    <i class="fas fa-check-circle"></i>
+                    <span>No significant concerns detected</span>
+                </div>
+            `;
+        } else {
+            conditionsListEl.innerHTML = results.conditions_detected.map(condition => `
+                <div class="condition-badge ${condition}">
+                    <i class="fas fa-${condition === 'depression' ? 'cloud-rain' : 'bolt'}"></i>
+                    <span>${condition.charAt(0).toUpperCase() + condition.slice(1)}</span>
+                </div>
+            `).join('');
+        }
+    }
+}
+
+// Format severity label
+function formatSeverity(severity) {
+    const labels = {
+        'minimal': 'Minimal',
+        'mild': 'Mild',
+        'moderate': 'Moderate',
+        'moderately_severe': 'Moderately Severe',
+        'severe': 'Severe'
+    };
+    return labels[severity] || severity;
+}
+
+// Generate assessment summary
+function generateAssessmentSummary(results) {
+    let summary = '';
+    
+    if (results.risk_level === 'high') {
+        summary = 'Your responses indicate significant mental health concerns. We strongly recommend speaking with a mental health professional as soon as possible. ';
+        if (results.recommendations_priority.includes('crisis_resources')) {
+            summary += 'If you are having thoughts of self-harm, please reach out to a crisis helpline immediately.';
+        }
+    } else if (results.risk_level === 'moderate') {
+        summary = 'Your responses suggest some areas that may benefit from attention. Consider speaking with a counselor or therapist to discuss these concerns. Practicing self-care strategies may also help.';
+    } else {
+        summary = 'Your responses indicate generally positive mental well-being. Continue maintaining healthy habits and monitor how you feel. Remember that seeking support is always okay, even when things are going well.';
+    }
+    
+    return summary;
+}
+
+// =====================================================
+// TEXT ANALYSIS FUNCTIONALITY
+// =====================================================
+
+// Start text analysis
+function startTextAnalysis() {
+    showSection(textAnalysisSection);
+    hideSection(landingSection);
+    currentStep = 'text-analysis';
+    updateNavigationButtons();
+}
+
+// Update text statistics
+function updateTextStats() {
+    const text = feelingsText.value;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    
+    if (wordCountDisplay) wordCountDisplay.textContent = `${words} words`;
+    if (charCountDisplay) charCountDisplay.textContent = `${chars} characters`;
+}
+
+// Analyze text input
+function analyzeText() {
+    const text = feelingsText.value.trim();
+    
+    if (!text) {
+        alert('Please enter some text to analyze.');
+        return;
+    }
+    
+    if (text.split(/\s+/).length < 5) {
+        alert('Please write at least a few sentences for a meaningful analysis.');
+        return;
+    }
+    
+    // Analyze text locally (client-side NLP)
+    const results = analyzeTextLocally(text);
+    
+    // Display results
+    displayTextResults(results);
+    
+    // Navigate to results section
+    showSection(textResultsSection);
+    hideSection(textAnalysisSection);
+    currentStep = 'text-results';
+    updateNavigationButtons();
+}
+
+// Client-side text analysis (NLP-lite)
+function analyzeTextLocally(text) {
+    const processedText = text.toLowerCase();
+    const words = processedText.split(/\s+/);
+    
+    // Sentiment analysis
+    const sentiment = calculateSentiment(processedText, words);
+    
+    // Detect mental health indicators
+    const indicators = detectIndicators(processedText);
+    
+    // Calculate risk level
+    const riskLevel = calculateRiskLevel(indicators, sentiment);
+    
+    // Generate insights
+    const insights = generateInsights(indicators, sentiment, riskLevel);
+    
+    return {
+        sentiment,
+        indicators,
+        risk_level: riskLevel,
+        insights,
+        word_count: words.length
+    };
+}
+
+// Calculate sentiment
+function calculateSentiment(text, words) {
+    const positiveWords = [
+        'happy', 'joy', 'love', 'excited', 'grateful', 'thankful', 'blessed',
+        'wonderful', 'amazing', 'great', 'good', 'nice', 'beautiful', 'hopeful',
+        'optimistic', 'content', 'peaceful', 'calm', 'relaxed', 'confident'
+    ];
+    
+    const negativeWords = [
+        'sad', 'depressed', 'anxious', 'worried', 'stressed', 'angry', 'frustrated',
+        'hopeless', 'worthless', 'tired', 'exhausted', 'lonely', 'scared', 'afraid',
+        'terrible', 'awful', 'horrible', 'hate', 'pain', 'suffering', 'empty'
+    ];
+    
+    let positiveCount = 0;
+    let negativeCount = 0;
+    
+    words.forEach(word => {
+        if (positiveWords.some(pw => word.includes(pw))) positiveCount++;
+        if (negativeWords.some(nw => word.includes(nw))) negativeCount++;
+    });
+    
+    const total = positiveCount + negativeCount;
+    const polarity = total > 0 ? (positiveCount - negativeCount) / total : 0;
+    const subjectivity = Math.min(1, (total / words.length) * 3);
+    
+    let interpretation = 'neutral';
+    if (polarity > 0.2) interpretation = 'positive';
+    else if (polarity < -0.2) interpretation = 'negative';
+    
+    return {
+        polarity: Math.round(polarity * 100) / 100,
+        subjectivity: Math.round(subjectivity * 100) / 100,
+        positive_words: positiveCount,
+        negative_words: negativeCount,
+        interpretation
+    };
+}
+
+// Detect mental health indicators
+function detectIndicators(text) {
+    const indicators = {
+        depression: { level: 'none', keywords_found: [] },
+        anxiety: { level: 'none', keywords_found: [] },
+        stress: { level: 'none', keywords_found: [] }
+    };
+    
+    // Depression keywords
+    const depressionKeywords = {
+        high: ['suicidal', 'suicide', 'kill myself', 'want to die', 'end my life', 'worthless', 'hopeless'],
+        moderate: ['depressed', 'depression', 'empty', 'numb', 'no energy', 'hate myself', 'failure'],
+        mild: ['sad', 'down', 'unhappy', 'low', 'unmotivated', 'lonely', 'tired']
+    };
+    
+    // Anxiety keywords
+    const anxietyKeywords = {
+        high: ['panic attack', 'cannot breathe', 'terrified', 'heart racing', 'losing control'],
+        moderate: ['anxious', 'anxiety', 'worried constantly', 'scared', 'restless', 'on edge'],
+        mild: ['worried', 'nervous', 'uneasy', 'stressed', 'overwhelmed']
+    };
+    
+    // Stress keywords
+    const stressKeywords = {
+        high: ['breaking down', 'cannot cope', 'falling apart', 'burned out'],
+        moderate: ['stressed', 'pressure', 'too much', 'overworked', 'exhausted'],
+        mild: ['busy', 'hectic', 'demanding', 'challenging']
+    };
+    
+    // Check each category
+    checkKeywords(text, depressionKeywords, indicators.depression);
+    checkKeywords(text, anxietyKeywords, indicators.anxiety);
+    checkKeywords(text, stressKeywords, indicators.stress);
+    
+    return indicators;
+}
+
+// Helper function to check keywords
+function checkKeywords(text, keywordSets, indicator) {
+    for (const [level, keywords] of Object.entries(keywordSets)) {
+        for (const keyword of keywords) {
+            if (text.includes(keyword)) {
+                indicator.keywords_found.push(keyword);
+                const levelPriority = { none: 0, mild: 1, moderate: 2, high: 3 };
+                if (levelPriority[level] > levelPriority[indicator.level]) {
+                    indicator.level = level;
+                }
+            }
+        }
+    }
+}
+
+// Calculate risk level from indicators and sentiment
+function calculateRiskLevel(indicators, sentiment) {
+    // High risk indicators
+    if (indicators.depression.level === 'high' || indicators.anxiety.level === 'high') {
+        return 'high';
+    }
+    
+    // Moderate risk
+    let moderateCount = 0;
+    ['depression', 'anxiety', 'stress'].forEach(condition => {
+        if (indicators[condition].level === 'moderate') moderateCount++;
+    });
+    
+    if (moderateCount >= 2 || (moderateCount === 1 && sentiment.polarity < -0.3)) {
+        return 'moderate';
+    }
+    
+    // Mild indicators with negative sentiment
+    let mildCount = 0;
+    ['depression', 'anxiety', 'stress'].forEach(condition => {
+        if (indicators[condition].level === 'mild') mildCount++;
+    });
+    
+    if (mildCount >= 2 && sentiment.polarity < 0) {
+        return 'moderate';
+    }
+    
+    return 'low';
+}
+
+// Generate insights from analysis
+function generateInsights(indicators, sentiment, riskLevel) {
+    const insights = [];
+    
+    // Sentiment insight
+    if (sentiment.interpretation === 'positive') {
+        insights.push({
+            type: 'positive',
+            message: 'Your text expresses generally positive emotions and outlook.'
+        });
+    } else if (sentiment.interpretation === 'negative') {
+        insights.push({
+            type: 'concern',
+            message: 'Your text reflects some negative emotions. This is normal to experience sometimes.'
+        });
+    }
+    
+    // Depression indicators
+    if (indicators.depression.level !== 'none') {
+        if (indicators.depression.level === 'high') {
+            insights.push({
+                type: 'urgent',
+                message: 'We detected some concerning expressions in your text. Please consider speaking with a mental health professional.'
+            });
+        } else if (indicators.depression.level === 'moderate') {
+            insights.push({
+                type: 'concern',
+                message: 'Your text suggests you may be experiencing some feelings of sadness or low mood.'
+            });
+        }
+    }
+    
+    // Anxiety indicators
+    if (indicators.anxiety.level !== 'none' && ['high', 'moderate'].includes(indicators.anxiety.level)) {
+        insights.push({
+            type: 'concern',
+            message: 'Your text indicates you may be experiencing anxiety or worry. Relaxation techniques may help.'
+        });
+    }
+    
+    // Stress indicators
+    if (indicators.stress.level !== 'none' && ['high', 'moderate'].includes(indicators.stress.level)) {
+        insights.push({
+            type: 'concern',
+            message: 'You seem to be experiencing stress. Consider taking breaks and practicing self-care.'
+        });
+    }
+    
+    if (insights.length === 0) {
+        insights.push({
+            type: 'neutral',
+            message: 'Your text appears emotionally balanced. Continue monitoring how you feel.'
+        });
+    }
+    
+    return insights;
+}
+
+// Display text analysis results
+function displayTextResults(results) {
+    // Update polarity bar
+    const polarityBar = document.getElementById('polarity-bar');
+    const polarityValue = document.getElementById('polarity-value');
+    
+    if (polarityBar && polarityValue) {
+        const polarityPercent = ((results.sentiment.polarity + 1) / 2) * 100;
+        polarityBar.style.width = `${polarityPercent}%`;
+        polarityValue.textContent = results.sentiment.polarity.toFixed(2);
+        
+        // Set color based on polarity
+        polarityBar.classList.remove('positive', 'negative');
+        if (results.sentiment.polarity > 0) {
+            polarityBar.classList.add('positive');
+        } else if (results.sentiment.polarity < 0) {
+            polarityBar.classList.add('negative');
+        }
+    }
+    
+    // Update subjectivity bar
+    const subjectivityBar = document.getElementById('subjectivity-bar');
+    const subjectivityValue = document.getElementById('subjectivity-value');
+    
+    if (subjectivityBar && subjectivityValue) {
+        subjectivityBar.style.width = `${results.sentiment.subjectivity * 100}%`;
+        subjectivityValue.textContent = results.sentiment.subjectivity.toFixed(2);
+    }
+    
+    // Update sentiment interpretation
+    const sentimentInterpretation = document.getElementById('sentiment-interpretation');
+    if (sentimentInterpretation) {
+        const interpretationText = {
+            positive: 'Your overall sentiment is positive, indicating generally optimistic or happy feelings.',
+            negative: 'Your overall sentiment is negative, which may indicate some emotional challenges.',
+            neutral: 'Your overall sentiment is neutral, showing balanced emotional expression.'
+        };
+        sentimentInterpretation.textContent = interpretationText[results.sentiment.interpretation];
+    }
+    
+    // Update indicators grid
+    const indicatorsGrid = document.getElementById('indicators-grid');
+    if (indicatorsGrid) {
+        indicatorsGrid.innerHTML = ['depression', 'anxiety', 'stress'].map(condition => `
+            <div class="indicator-card level-${results.indicators[condition].level}">
+                <p class="indicator-name">${condition}</p>
+                <p class="indicator-level level-${results.indicators[condition].level}">
+                    ${results.indicators[condition].level === 'none' ? 'Not Detected' : results.indicators[condition].level}
+                </p>
+            </div>
+        `).join('');
+    }
+    
+    // Update insights list
+    const insightsList = document.getElementById('insights-list');
+    if (insightsList) {
+        insightsList.innerHTML = results.insights.map(insight => `
+            <div class="insight-item ${insight.type}">
+                <i class="fas fa-${getInsightIcon(insight.type)}"></i>
+                <p>${insight.message}</p>
+            </div>
+        `).join('');
+    }
+    
+    // Update risk level
+    const textRiskLevel = document.getElementById('text-risk-level');
+    if (textRiskLevel) {
+        textRiskLevel.textContent = results.risk_level.charAt(0).toUpperCase() + results.risk_level.slice(1);
+        textRiskLevel.className = `risk-level ${results.risk_level}`;
+    }
+}
+
+// Get icon for insight type
+function getInsightIcon(type) {
+    const icons = {
+        positive: 'smile',
+        concern: 'exclamation-triangle',
+        urgent: 'exclamation-circle',
+        neutral: 'info-circle'
+    };
+    return icons[type] || 'info-circle';
+}
+
+// Generate intervention from questionnaire results
+function generateInterventionFromQuestionnaire() {
+    // Get the results from the displayed data
+    const phq9Score = parseInt(document.getElementById('phq9-score')?.textContent || '0');
+    const gad7Score = parseInt(document.getElementById('gad7-score')?.textContent || '0');
+    
+    // Determine dominant concern
+    let dominantEmotion = 'neutral';
+    if (phq9Score > gad7Score && phq9Score >= 10) {
+        dominantEmotion = 'sad';
+    } else if (gad7Score >= 10) {
+        dominantEmotion = 'fearful';
+    } else if (phq9Score >= 5 || gad7Score >= 5) {
+        dominantEmotion = 'neutral';
+    }
+    
+    // Use existing intervention generation
+    updateEmotionSummary(dominantEmotion);
+    generateRecommendations(dominantEmotion);
+    generateExercises(dominantEmotion);
+}
+
+// Generate intervention from text analysis results
+function generateInterventionFromText() {
+    // Get the risk level from text results
+    const riskLevel = document.getElementById('text-risk-level')?.textContent.toLowerCase() || 'low';
+    const sentiment = document.getElementById('sentiment-interpretation')?.textContent || '';
+    
+    // Determine emotion based on analysis
+    let dominantEmotion = 'neutral';
+    if (sentiment.includes('negative')) {
+        if (riskLevel === 'high') {
+            dominantEmotion = 'sad';
+        } else {
+            dominantEmotion = 'fearful';
+        }
+    } else if (sentiment.includes('positive')) {
+        dominantEmotion = 'happy';
+    }
+    
+    // Use existing intervention generation
+    updateEmotionSummary(dominantEmotion);
+    generateRecommendations(dominantEmotion);
+    generateExercises(dominantEmotion);
+}
