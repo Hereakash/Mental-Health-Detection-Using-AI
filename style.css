@@ -731,8 +731,8 @@ footer .container {
     accent-color: var(--primary-color);
 }
 
-.answer-options input[type="radio"]:checked + span,
-.answer-options label:has(input:checked) {
+/* Note: :has() may not work in older browsers - styling is enhanced via JavaScript */
+.answer-options label.selected {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);

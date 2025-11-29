@@ -66,6 +66,22 @@ function initApp() {
     if (feelingsText) {
         feelingsText.addEventListener('input', updateTextStats);
     }
+    
+    // Create toast container for notifications
+    createToastContainer();
+    
+    // Add event delegation for radio button selection styling
+    document.addEventListener('change', function(e) {
+        if (e.target.type === 'radio' && e.target.closest('.answer-options')) {
+            const group = e.target.name;
+            // Remove selected class from all labels in this group
+            document.querySelectorAll(`input[name="${group}"]`).forEach(input => {
+                input.closest('label').classList.remove('selected');
+            });
+            // Add selected class to the checked label
+            e.target.closest('label').classList.add('selected');
+        }
+    });
 
     // Load theme preference from localStorage
     const savedTheme = localStorage.getItem('theme');
@@ -180,7 +196,7 @@ async function startDetection() {
         startFaceDetection();
     } catch (error) {
         console.error('Error starting detection:', error);
-        alert('An error occurred while starting the detection process. Please ensure that you have granted camera permissions and try again.');
+        showToast('An error occurred while starting the detection process. Please ensure that you have granted camera permissions and try again.', 'error');
     }
 }
 
@@ -858,6 +874,94 @@ function updateNavigationButtons() {
 // In a real environment, these would be downloaded from face-api.js GitHub
 
 // =====================================================
+// TOAST NOTIFICATION SYSTEM
+// =====================================================
+
+// Create toast container
+function createToastContainer() {
+    if (!document.getElementById('toast-container')) {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        `;
+        document.body.appendChild(container);
+    }
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const iconMap = {
+        info: 'fa-info-circle',
+        success: 'fa-check-circle',
+        warning: 'fa-exclamation-triangle',
+        error: 'fa-exclamation-circle'
+    };
+    
+    const colorMap = {
+        info: '#5e72e4',
+        success: '#2dce89',
+        warning: '#fb6340',
+        error: '#f5365c'
+    };
+    
+    toast.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        background: var(--surface-color, white);
+        border-left: 4px solid ${colorMap[type]};
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        max-width: 400px;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    toast.innerHTML = `
+        <i class="fas ${iconMap[type]}" style="color: ${colorMap[type]}; font-size: 1.2rem;"></i>
+        <span style="color: var(--text-color, #333);">${message}</span>
+    `;
+    
+    // Add animation keyframes if not already added
+    if (!document.getElementById('toast-animations')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animations';
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    container.appendChild(toast);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// =====================================================
 // QUESTIONNAIRE FUNCTIONALITY
 // =====================================================
 
@@ -891,7 +995,7 @@ function submitQuestionnaire() {
     
     // Validate that all questions are answered
     if (phq9Responses.length < 9 || gad7Responses.length < 7) {
-        alert('Please answer all questions before submitting.');
+        showToast('Please answer all questions before submitting.', 'warning');
         return;
     }
     
@@ -1089,12 +1193,12 @@ function analyzeText() {
     const text = feelingsText.value.trim();
     
     if (!text) {
-        alert('Please enter some text to analyze.');
+        showToast('Please enter some text to analyze.', 'warning');
         return;
     }
     
     if (text.split(/\s+/).length < 5) {
-        alert('Please write at least a few sentences for a meaningful analysis.');
+        showToast('Please write at least a few sentences for a meaningful analysis.', 'warning');
         return;
     }
     
@@ -1154,9 +1258,12 @@ function calculateSentiment(text, words) {
     let positiveCount = 0;
     let negativeCount = 0;
     
+    // Use word boundary matching for accurate detection
     words.forEach(word => {
-        if (positiveWords.some(pw => word.includes(pw))) positiveCount++;
-        if (negativeWords.some(nw => word.includes(nw))) negativeCount++;
+        // Clean the word of punctuation
+        const cleanWord = word.replace(/[.,!?;:'"()]/g, '').toLowerCase();
+        if (positiveWords.includes(cleanWord)) positiveCount++;
+        if (negativeWords.includes(cleanWord)) negativeCount++;
     });
     
     const total = positiveCount + negativeCount;
@@ -1205,21 +1312,32 @@ function detectIndicators(text) {
         mild: ['busy', 'hectic', 'demanding', 'challenging']
     };
     
+    // Helper function for word boundary matching
+    function findKeywordMatch(text, keyword) {
+        // For multi-word phrases, match directly
+        if (keyword.includes(' ')) {
+            return text.includes(keyword);
+        }
+        // For single words, use word boundary regex
+        const regex = new RegExp('\\b' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+        return regex.test(text);
+    }
+    
     // Check each category
-    checkKeywords(text, depressionKeywords, indicators.depression);
-    checkKeywords(text, anxietyKeywords, indicators.anxiety);
-    checkKeywords(text, stressKeywords, indicators.stress);
+    checkKeywordsWithBoundary(text, depressionKeywords, indicators.depression, findKeywordMatch);
+    checkKeywordsWithBoundary(text, anxietyKeywords, indicators.anxiety, findKeywordMatch);
+    checkKeywordsWithBoundary(text, stressKeywords, indicators.stress, findKeywordMatch);
     
     return indicators;
 }
 
-// Helper function to check keywords
-function checkKeywords(text, keywordSets, indicator) {
+// Helper function to check keywords with word boundary matching
+function checkKeywordsWithBoundary(text, keywordSets, indicator, matchFn) {
+    const levelPriority = { none: 0, mild: 1, moderate: 2, high: 3 };
     for (const [level, keywords] of Object.entries(keywordSets)) {
         for (const keyword of keywords) {
-            if (text.includes(keyword)) {
+            if (matchFn(text, keyword)) {
                 indicator.keywords_found.push(keyword);
-                const levelPriority = { none: 0, mild: 1, moderate: 2, high: 3 };
                 if (levelPriority[level] > levelPriority[indicator.level]) {
                     indicator.level = level;
                 }

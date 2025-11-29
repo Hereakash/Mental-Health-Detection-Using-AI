@@ -199,10 +199,22 @@ class TextAnalyzer:
             'positive': {'keywords_found': []}
         }
         
+        # Use word boundary matching for accurate detection
+        import re
+        
+        def find_keyword_matches(text, keyword):
+            """Find keyword with word boundary matching"""
+            # For multi-word phrases, match directly
+            if ' ' in keyword:
+                return keyword in text
+            # For single words, use word boundary
+            pattern = r'\b' + re.escape(keyword) + r'\b'
+            return bool(re.search(pattern, text))
+        
         # Check depression keywords
         for level, keywords in self.depression_keywords.items():
             for keyword in keywords:
-                if keyword in text:
+                if find_keyword_matches(text, keyword):
                     indicators['depression']['keywords_found'].append(keyword)
                     if indicators['depression']['level'] == 'none' or \
                        self._level_priority(level) > self._level_priority(indicators['depression']['level']):
@@ -211,7 +223,7 @@ class TextAnalyzer:
         # Check anxiety keywords
         for level, keywords in self.anxiety_keywords.items():
             for keyword in keywords:
-                if keyword in text:
+                if find_keyword_matches(text, keyword):
                     indicators['anxiety']['keywords_found'].append(keyword)
                     if indicators['anxiety']['level'] == 'none' or \
                        self._level_priority(level) > self._level_priority(indicators['anxiety']['level']):
@@ -220,7 +232,7 @@ class TextAnalyzer:
         # Check stress keywords
         for level, keywords in self.stress_keywords.items():
             for keyword in keywords:
-                if keyword in text:
+                if find_keyword_matches(text, keyword):
                     indicators['stress']['keywords_found'].append(keyword)
                     if indicators['stress']['level'] == 'none' or \
                        self._level_priority(level) > self._level_priority(indicators['stress']['level']):
@@ -228,7 +240,7 @@ class TextAnalyzer:
         
         # Check positive keywords
         for keyword in self.positive_keywords:
-            if keyword in text:
+            if find_keyword_matches(text, keyword):
                 indicators['positive']['keywords_found'].append(keyword)
         
         return indicators
