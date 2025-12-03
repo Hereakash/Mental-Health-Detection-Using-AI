@@ -320,6 +320,13 @@ import json
 import re
 import random
 
+# Load environment variables from .env file if available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv not installed, will use system environment variables
+
 # Try to import Google Gemini, but don't fail if not installed
 try:
     import google.generativeai as genai
@@ -330,7 +337,7 @@ except ImportError:
 
 # Get Gemini API key from environment variables
 # Supports both common names
-GEMINI_API_KEY = "AIzaSyBNKNkWQuCsuCho1XntQZcEqsy2VwC4qzA"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 
 class MentalHealthChatbot:
     """
