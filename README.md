@@ -88,6 +88,120 @@ export FLASK_DEBUG=true
 python app.py
 ```
 
+## Model Training
+
+The system includes machine learning models that can be trained to predict mental health risk levels from text.
+
+### Quick Start - Train a Model
+
+```bash
+cd backend
+
+# Train with built-in sample data
+python train_model.py
+
+# Train with your own dataset
+python train_model.py --data ../datasets/my_dataset.csv
+
+# Choose a specific algorithm
+python train_model.py --model random_forest
+```
+
+### Available Model Types
+
+| Model | Best For | Training Speed | Accuracy |
+|-------|----------|----------------|----------|
+| **Logistic Regression** (default) | General use, quick testing | ⚡ Fast | Good |
+| **Random Forest** | Robust predictions | ⚡⚡ Moderate | Better |
+| **Gradient Boosting** | Maximum accuracy | ⚡⚡⚡ Slower | Best |
+
+### Dataset Format
+
+Create a CSV file with two columns:
+
+```csv
+text,label
+"I feel happy and optimistic",low
+"I've been feeling anxious",moderate
+"I feel hopeless and trapped",high
+```
+
+**Labels must be:** `low`, `moderate`, or `high`
+
+### Training Options
+
+```bash
+# Train with custom dataset
+python train_model.py --data path/to/dataset.csv
+
+# Choose model algorithm  
+python train_model.py --model logistic_regression
+python train_model.py --model random_forest
+python train_model.py --model gradient_boosting
+
+# Adjust train/test split
+python train_model.py --test-size 0.3
+
+# Test with specific texts
+python train_model.py --test-texts "I feel great" "I'm worried"
+
+# Skip testing after training
+python train_model.py --no-test
+```
+
+### Sample Datasets
+
+We provide sample datasets in the `datasets/` directory:
+- **`sample_dataset.csv`** - 40 examples for testing
+- **`template_dataset.csv`** - Template to create your own dataset
+
+### Programmatic Training
+
+You can also train models programmatically:
+
+```python
+from ml_model import MentalHealthMLModel
+
+# Initialize model
+model = MentalHealthMLModel()
+
+# Train with custom data
+texts = ["I feel great", "I'm anxious", "I'm hopeless"]
+labels = ["low", "moderate", "high"]
+results = model.train(texts, labels, model_type="random_forest")
+
+# View results
+print(f"Accuracy: {results['accuracy']:.2%}")
+
+# Make predictions
+prediction = model.predict("I've been feeling stressed")
+print(f"Risk Level: {prediction['risk_level']}")
+print(f"Confidence: {prediction['confidence']:.2%}")
+```
+
+### Training via API
+
+Train models through REST API endpoints:
+
+```bash
+# Train with sample data
+curl -X POST http://localhost:5000/api/model/train
+
+# Train with specific model type
+curl -X POST http://localhost:5000/api/model/train \
+  -H "Content-Type: application/json" \
+  -d '{"model_type": "random_forest"}'
+```
+
+### 📖 Complete Training Guide
+
+For detailed instructions, see the [Model Training Guide](docs/MODEL_TRAINING.md):
+- Dataset preparation guidelines
+- Model selection advice  
+- Performance optimization
+- Best practices
+- Troubleshooting
+
 ## API Endpoints
 
 ### User Management
@@ -129,9 +243,16 @@ Mental-Health-Detection-Using-AI/
 │   ├── database.py         # SQLite database operations
 │   ├── chatbot.py          # AI chatbot module
 │   ├── ml_model.py         # ML model training/prediction
+│   ├── train_model.py      # Standalone training script
 │   ├── mental_health_predictor.py  # Clinical scale scoring
 │   ├── text_analyzer.py    # NLP text analysis
 │   └── requirements.txt    # Python dependencies
+├── datasets/               # Training datasets
+│   ├── README.md           # Dataset documentation
+│   ├── sample_dataset.csv  # Sample training data (40 examples)
+│   └── template_dataset.csv # Empty template for custom datasets
+├── docs/
+│   └── MODEL_TRAINING.md   # Comprehensive model training guide
 ├── models/                 # Trained ML models (auto-generated)
 └── mental_health.db        # SQLite database (auto-generated)
 ```
