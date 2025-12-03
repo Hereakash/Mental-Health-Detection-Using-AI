@@ -35,7 +35,8 @@ An AI-powered software tool designed to identify early signs of mental health is
 - Real-time webcam-based emotion detection using face-api.js
 - Detection of 7 basic emotions: happy, sad, angry, fearful, surprised, disgusted, neutral
 - Confidence scoring for detected emotions
-- **Note**: Requires HTTPS or localhost for camera access. Face-API models are included (~7MB).
+- **Works offline** - face-api.js library and models included locally
+- 📖 [Quick Start Guide](QUICK_START_FACIAL_DETECTION.md) | [Troubleshooting](TROUBLESHOOTING_FACIAL_DETECTION.md)
 
 ### 6. Personalized Interventions
 - Emotion-specific recommendations and coping strategies
@@ -69,28 +70,35 @@ An AI-powered software tool designed to identify early signs of mental health is
 - Modern web browser with webcam support (Chrome, Firefox, Edge, Safari)
 - HTTPS connection OR localhost (required for camera access)
 - Camera permissions granted to the browser
-- **Internet connection** (required to load face-api.js library from CDN)
+- Face-API.js library (included locally in `assets/js/`) with CDN fallback
 - Face-API.js models are included in the `models/` directory (~7MB)
 
 ### Frontend (Static Files)
-Simply open `index.html` in a web browser, or serve with any static file server:
+**⚠️ IMPORTANT**: The application MUST be served through a web server (not opened directly).
 
 ```bash
-# Using Python's built-in server
+# Using Python's built-in server (recommended)
 python -m http.server 8080
 # Then visit http://localhost:8080
 
 # Using Node.js http-server
-npx http-server
+npx http-server -p 8080
 # Then visit http://localhost:8080
 ```
 
+**Verify Your Setup:**
+```bash
+# Run the verification script to check if everything is configured correctly
+bash verify-setup.sh
+```
+
 **Important for Facial Detection:**
-- The application must be served over HTTPS or from localhost
-- Camera access will not work when opening the HTML file directly (file://)
-- Ensure no other application is using your camera
-- **Internet connection is required** to load the face-api.js library from CDN
-- For offline use, see [Offline Setup Guide](docs/OFFLINE_SETUP.md)
+- ✅ The application must be served over HTTPS or from localhost
+- ❌ Camera access will NOT work when opening the HTML file directly (file://)
+- ✅ Ensure no other application is using your camera
+- ✅ Face-api.js library is included locally (works offline)
+- ✅ All model files are included in the repository
+- 📖 **Having issues?** See [Troubleshooting Guide](TROUBLESHOOTING_FACIAL_DETECTION.md)
 
 
 ### Backend (For Database, AI Chatbot, and ML Features)
@@ -258,8 +266,12 @@ Mental-Health-Detection-Using-AI/
 ├── style.css               # Stylesheet with theme support
 ├── script.js               # Frontend JavaScript
 ├── README.md               # Project documentation
+├── TROUBLESHOOTING_FACIAL_DETECTION.md  # Facial detection troubleshooting guide
+├── verify-setup.sh         # Setup verification script
 ├── assets/
-│   └── images/             # Image assets
+│   ├── images/             # Image assets
+│   └── js/
+│       └── face-api.min.js # Face-API.js library (local, ~649KB)
 ├── models/                 # Face-API.js models for facial detection (~7MB)
 │   ├── README.md           # Models documentation
 │   ├── tiny_face_detector_model-*
@@ -342,12 +354,25 @@ Mental-Health-Detection-Using-AI/
 
 ### Facial Detection Issues
 
-**Problem: "Failed to load AI models"**
-- **Solution**: Ensure you're running the app from a web server (not opening the HTML file directly)
-- The `models/` directory must be accessible and contain all face-api.js model files
-- Check browser console for specific errors
-- **Verify you have an active internet connection** (required to load face-api.js library from CDN)
-- If using a firewall or ad-blocker, ensure cdn.jsdelivr.net is not blocked
+⚠️ **Having issues with facial detection?** See the comprehensive [Troubleshooting Guide](TROUBLESHOOTING_FACIAL_DETECTION.md) for detailed solutions.
+
+**Quick Fixes:**
+
+**Problem: "Failed to load AI models" despite having internet**
+- **Cause**: CDN blocked, or not using web server, or CORS issues
+- **Solution**: 
+  1. ✅ Use a web server: `python -m http.server 8080`
+  2. ✅ Visit `http://localhost:8080` (NOT `file://`)
+  3. ✅ Disable ad-blockers temporarily
+  4. ✅ Check browser console (F12) for specific errors
+  5. ✅ Face-api.js now loads locally (no CDN required!)
+
+**Problem: "Library not loaded"**
+- **Cause**: CDN blocked or local file missing
+- **Solution**: 
+  - Verify `assets/js/face-api.min.js` exists (649KB)
+  - Disable ad-blockers/firewalls blocking CDN
+  - Refresh page after disabling blockers
 
 **Problem: "Camera access denied" or "Unable to access camera"**
 - **Solution 1**: Grant camera permissions in your browser
@@ -370,6 +395,8 @@ Mental-Health-Detection-Using-AI/
   - Refresh the page and try again
   - Check if your camera drivers are up to date
   - Try a different browser
+
+📖 **For detailed troubleshooting**, see [TROUBLESHOOTING_FACIAL_DETECTION.md](TROUBLESHOOTING_FACIAL_DETECTION.md)
 
 ### Backend/API Issues
 
