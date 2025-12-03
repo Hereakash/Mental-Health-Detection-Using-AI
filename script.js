@@ -60,8 +60,14 @@ const chatInput = document.getElementById('chat-input');
 const sendMessageBtn = document.getElementById('send-message-btn');
 const generateReportBtn = document.getElementById('generate-report-btn');
 const clearChatBtn = document.getElementById('clear-chat-btn');
+const logoutBtn = document.getElementById('logout-btn');
 const downloadReportBtn = document.getElementById('download-report-btn');
 const backToChatBtn = document.getElementById('back-to-chat-btn');
+const existingAccountNotice = document.getElementById('existing-account-notice');
+const continueExistingBtn = document.getElementById('continue-existing-btn');
+const createNewAccountBtn = document.getElementById('create-new-account-btn');
+const existingUserNameSpan = document.getElementById('existing-user-name');
+const userNameDisplay = document.getElementById('user-name-display');
 
 const webcamElement = document.getElementById('webcam');
 const overlayCanvas = document.getElementById('overlay');
@@ -108,8 +114,11 @@ function initApp() {
     }
     if (generateReportBtn) generateReportBtn.addEventListener('click', generateReport);
     if (clearChatBtn) clearChatBtn.addEventListener('click', clearChat);
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     if (downloadReportBtn) downloadReportBtn.addEventListener('click', downloadReport);
     if (backToChatBtn) backToChatBtn.addEventListener('click', backToChat);
+    if (continueExistingBtn) continueExistingBtn.addEventListener('click', continueWithExistingAccount);
+    if (createNewAccountBtn) createNewAccountBtn.addEventListener('click', createNewAccount);
     
     // Suggestion chips
     document.querySelectorAll('.suggestion-chip').forEach(chip => {
@@ -1803,16 +1812,38 @@ function generateInterventionFromText() {
 function startChatbot() {
     // Check if user data exists
     if (userData) {
-        // Skip registration, go directly to chat
-        showSection(chatbotSection);
+        // Show registration with option to continue or create new account
+        showSection(chatbotRegistrationSection);
         hideSection(landingSection);
-        currentStep = 'chatbot';
-        initializeChatbot();
+        currentStep = 'chatbot-registration';
+        
+        // Show existing account notice
+        if (existingAccountNotice) {
+            existingAccountNotice.classList.remove('hidden');
+            if (existingUserNameSpan) {
+                existingUserNameSpan.textContent = userData.name;
+            }
+        }
+        
+        // Hide the form initially
+        if (userRegistrationForm) {
+            userRegistrationForm.style.display = 'none';
+        }
     } else {
         // Show registration first
         showSection(chatbotRegistrationSection);
         hideSection(landingSection);
         currentStep = 'chatbot-registration';
+        
+        // Hide existing account notice
+        if (existingAccountNotice) {
+            existingAccountNotice.classList.add('hidden');
+        }
+        
+        // Show the form
+        if (userRegistrationForm) {
+            userRegistrationForm.style.display = 'block';
+        }
     }
     updateNavigationButtons();
 }
@@ -1854,8 +1885,75 @@ function handleUserRegistration(e) {
     showToast(`Welcome, ${escapeHtml(name)}! Let's chat.`, 'success');
 }
 
+// Continue with existing account
+function continueWithExistingAccount() {
+    // Navigate to chatbot with existing user data
+    showSection(chatbotSection);
+    hideSection(chatbotRegistrationSection);
+    currentStep = 'chatbot';
+    updateNavigationButtons();
+    
+    // Initialize chatbot with existing data
+    initializeChatbot();
+    
+    showToast(`Welcome back, ${escapeHtml(userData.name)}!`, 'success');
+}
+
+// Create new account (clears existing account data)
+function createNewAccount() {
+    // Confirm action with user
+    if (confirm('Creating a new account will clear your existing account data and chat history. Are you sure you want to continue?')) {
+        // Clear existing user data
+        userData = null;
+        chatHistory = [];
+        chatAnalysis = {
+            messageCount: 0,
+            detectedEmotions: [],
+            topics: [],
+            overallSentiment: 'neutral',
+            riskLevel: 'low'
+        };
+        
+        // Clear localStorage
+        localStorage.removeItem('userData');
+        localStorage.removeItem('chatHistory');
+        localStorage.removeItem('chatAnalysis');
+        
+        // Hide existing account notice and show form
+        if (existingAccountNotice) {
+            existingAccountNotice.classList.add('hidden');
+        }
+        if (userRegistrationForm) {
+            userRegistrationForm.style.display = 'block';
+            userRegistrationForm.reset();
+        }
+        
+        showToast('Please enter your details to create a new account', 'info');
+    }
+}
+
+// Handle logout
+function handleLogout() {
+    // Confirm logout with user
+    if (confirm('Are you sure you want to logout? Your data is saved locally and will be available when you login again.')) {
+        // Navigate back to landing
+        showSection(landingSection);
+        hideSection(chatbotSection);
+        hideSection(reportSection);
+        currentStep = 'landing';
+        updateNavigationButtons();
+        
+        showToast('Logged out successfully', 'success');
+    }
+}
+
 // Initialize chatbot
 function initializeChatbot() {
+    // Update user info display
+    if (userNameDisplay && userData) {
+        userNameDisplay.innerHTML = `<i class="fas fa-user-circle"></i> ${escapeHtml(userData.name)}`;
+    }
+    
     // Display existing chat history if any
     displayChatHistory();
     
