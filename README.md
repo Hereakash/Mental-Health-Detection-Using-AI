@@ -69,6 +69,7 @@ An AI-powered software tool designed to identify early signs of mental health is
 - Modern web browser with webcam support (Chrome, Firefox, Edge, Safari)
 - HTTPS connection OR localhost (required for camera access)
 - Camera permissions granted to the browser
+- **Internet connection** (required to load face-api.js library from CDN)
 - Face-API.js models are included in the `models/` directory (~7MB)
 
 ### Frontend (Static Files)
@@ -88,6 +89,9 @@ npx http-server
 - The application must be served over HTTPS or from localhost
 - Camera access will not work when opening the HTML file directly (file://)
 - Ensure no other application is using your camera
+- **Internet connection is required** to load the face-api.js library from CDN
+- For offline use, see [Offline Setup Guide](docs/OFFLINE_SETUP.md)
+
 
 ### Backend (For Database, AI Chatbot, and ML Features)
 ```bash
@@ -342,7 +346,8 @@ Mental-Health-Detection-Using-AI/
 - **Solution**: Ensure you're running the app from a web server (not opening the HTML file directly)
 - The `models/` directory must be accessible and contain all face-api.js model files
 - Check browser console for specific errors
-- Verify internet connection (models are ~7MB total)
+- **Verify you have an active internet connection** (required to load face-api.js library from CDN)
+- If using a firewall or ad-blocker, ensure cdn.jsdelivr.net is not blocked
 
 **Problem: "Camera access denied" or "Unable to access camera"**
 - **Solution 1**: Grant camera permissions in your browser

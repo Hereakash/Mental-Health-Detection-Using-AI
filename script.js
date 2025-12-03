@@ -265,7 +265,9 @@ async function startDetection() {
         // Provide specific error messages based on error type
         let errorMessage = 'An error occurred while starting the detection process.';
         
-        if (error.message.includes('models')) {
+        if (error.message.includes('not loaded') || error.message.includes('faceapi')) {
+            errorMessage = 'Face-api.js library could not be loaded. Please:\n1. Check your internet connection\n2. Ensure CDN access (cdn.jsdelivr.net) is not blocked by firewall/ad-blocker\n3. For offline use, see the Offline Setup Guide in the documentation';
+        } else if (error.message.includes('models')) {
             errorMessage = 'Failed to load AI models. Please check your internet connection and refresh the page.';
         } else if (error.message.includes('webcam') || error.message.includes('camera')) {
             errorMessage = 'Unable to access camera. Please ensure:\n1. Camera permissions are granted\n2. No other application is using the camera\n3. Your browser supports camera access (use HTTPS or localhost)';
@@ -292,6 +294,11 @@ async function startDetection() {
 // Load face-api.js models
 async function loadModels() {
     try {
+        // Check if face-api.js library is loaded
+        if (typeof faceapi === 'undefined') {
+            throw new Error('Face-api.js library not loaded. Please check your internet connection and ensure CDN access is not blocked.');
+        }
+        
         console.log('Loading face-api.js models from ./models directory...');
         
         await Promise.all([
