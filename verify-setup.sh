@@ -19,10 +19,11 @@ WARNINGS=0
 
 # Check 1: Face-API.js library
 echo -n "Checking face-api.js library... "
-if [ -f "assets/js/face-api.min.js" ]; then
+FACEAPI_FILE="assets/js/face-api.min.js"
+if [ -f "$FACEAPI_FILE" ]; then
     # Try macOS stat syntax first, fallback to Linux syntax
     # macOS uses -f%z, Linux uses -c%s
-    SIZE=$(stat -f%z "assets/js/face-api.min.js" 2>/dev/null || stat -c%s "assets/js/face-api.min.js" 2>/dev/null)
+    SIZE=$(stat -f%z "$FACEAPI_FILE" 2>/dev/null || stat -c%s "$FACEAPI_FILE" 2>/dev/null)
     if [ "$SIZE" -gt 600000 ]; then
         echo -e "${GREEN}✓ OK${NC} ($SIZE bytes)"
     else
@@ -31,7 +32,7 @@ if [ -f "assets/js/face-api.min.js" ]; then
     fi
 else
     echo -e "${RED}✗ MISSING${NC}"
-    echo "  Download: curl -L -o assets/js/face-api.min.js https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/dist/face-api.min.js"
+    echo "  Download: curl -L -o $FACEAPI_FILE https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/dist/face-api.min.js"
     ERRORS=$((ERRORS + 1))
 fi
 
