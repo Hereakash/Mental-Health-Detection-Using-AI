@@ -69,6 +69,13 @@ const createNewAccountBtn = document.getElementById('create-new-account-btn');
 const existingUserNameSpan = document.getElementById('existing-user-name');
 const userNameDisplay = document.getElementById('user-name-display');
 
+// Modal elements
+const confirmationModal = document.getElementById('confirmation-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalDescription = document.getElementById('modal-description');
+const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
 const webcamElement = document.getElementById('webcam');
 const overlayCanvas = document.getElementById('overlay');
 const loadingIndicator = document.getElementById('loading-indicator');
@@ -169,6 +176,76 @@ function initApp() {
 
     // Create dynamic shooting stars for dark mode
     createShootingStars(10);
+}
+
+// =====================================================
+// MODAL HELPER FUNCTIONS
+// =====================================================
+
+// Show confirmation modal
+function showConfirmationModal(title, message) {
+    return new Promise((resolve) => {
+        if (modalTitle) modalTitle.textContent = title;
+        if (modalDescription) modalDescription.textContent = message;
+        
+        if (confirmationModal) {
+            confirmationModal.classList.remove('hidden');
+            // Focus on the confirm button for accessibility
+            if (modalConfirmBtn) modalConfirmBtn.focus();
+        }
+        
+        const handleConfirm = () => {
+            hideConfirmationModal();
+            resolve(true);
+        };
+        
+        const handleCancel = () => {
+            hideConfirmationModal();
+            resolve(false);
+        };
+        
+        // Remove any existing event listeners
+        if (modalConfirmBtn) {
+            const newConfirmBtn = modalConfirmBtn.cloneNode(true);
+            modalConfirmBtn.parentNode.replaceChild(newConfirmBtn, modalConfirmBtn);
+            newConfirmBtn.addEventListener('click', handleConfirm);
+        }
+        
+        if (modalCancelBtn) {
+            const newCancelBtn = modalCancelBtn.cloneNode(true);
+            modalCancelBtn.parentNode.replaceChild(newCancelBtn, modalCancelBtn);
+            newCancelBtn.addEventListener('click', handleCancel);
+        }
+        
+        // Handle escape key
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                hideConfirmationModal();
+                resolve(false);
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+        
+        // Handle clicking outside modal
+        const handleOutsideClick = (e) => {
+            if (e.target === confirmationModal) {
+                hideConfirmationModal();
+                resolve(false);
+                confirmationModal.removeEventListener('click', handleOutsideClick);
+            }
+        };
+        if (confirmationModal) {
+            confirmationModal.addEventListener('click', handleOutsideClick);
+        }
+    });
+}
+
+// Hide confirmation modal
+function hideConfirmationModal() {
+    if (confirmationModal) {
+        confirmationModal.classList.add('hidden');
+    }
 }
 
 // Function to create random shooting stars
@@ -1812,7 +1889,7 @@ function generateInterventionFromText() {
 function startChatbot() {
     // Check if user data exists
     if (userData) {
-        // Show registration with option to continue or create new account
+        // Show account selection options (continue with existing or create new)
         showSection(chatbotRegistrationSection);
         hideSection(landingSection);
         currentStep = 'chatbot-registration';
@@ -1900,9 +1977,14 @@ function continueWithExistingAccount() {
 }
 
 // Create new account (clears existing account data)
-function createNewAccount() {
-    // Confirm action with user
-    if (confirm('Creating a new account will clear your existing account data and chat history. Are you sure you want to continue?')) {
+async function createNewAccount() {
+    // Confirm action with user using accessible modal
+    const confirmed = await showConfirmationModal(
+        'Create New Account',
+        'Creating a new account will clear your existing account data and chat history. Are you sure you want to continue?'
+    );
+    
+    if (confirmed) {
         // Clear existing user data
         userData = null;
         chatHistory = [];
@@ -1933,9 +2015,14 @@ function createNewAccount() {
 }
 
 // Handle logout
-function handleLogout() {
-    // Confirm logout with user
-    if (confirm('Are you sure you want to logout? Your data is saved locally and will be available when you login again.')) {
+async function handleLogout() {
+    // Confirm logout with user using accessible modal
+    const confirmed = await showConfirmationModal(
+        'Logout',
+        'Are you sure you want to logout? Your data is saved locally and will be available when you login again.'
+    );
+    
+    if (confirmed) {
         // Navigate back to landing
         showSection(landingSection);
         hideSection(chatbotSection);
