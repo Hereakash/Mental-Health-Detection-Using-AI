@@ -265,18 +265,53 @@ async function startDetection() {
         // Provide specific error messages based on error type
         let errorMessage = 'An error occurred while starting the detection process.';
         
-        if (error.message.includes('not loaded') || error.message.includes('faceapi')) {
-            errorMessage = 'Face-api.js library could not be loaded. Please:\n1. Check your internet connection\n2. Ensure CDN access (cdn.jsdelivr.net) is not blocked by firewall/ad-blocker\n3. For offline use, see the Offline Setup Guide in the documentation';
-        } else if (error.message.includes('models')) {
-            errorMessage = 'Failed to load AI models. Please check your internet connection and refresh the page.';
+        // Check for specific error types
+        if (error.message.startsWith('LIBRARY_NOT_LOADED:')) {
+            errorMessage = '⚠️ Face-API.js Library Not Loaded\n\n' +
+                'The face-api.js library could not be loaded. This is usually because:\n\n' +
+                '1. CDN is blocked by your network/firewall/ad-blocker\n' +
+                '2. The local library file is missing\n\n' +
+                'Solutions:\n' +
+                '✓ Disable ad-blockers for this site\n' +
+                '✓ Check your network/firewall settings\n' +
+                '✓ Ensure assets/js/face-api.min.js exists\n' +
+                '✓ Try refreshing the page';
+        } else if (error.message.startsWith('MODEL_LOAD_FAILED:')) {
+            errorMessage = '⚠️ AI Models Failed to Load\n\n' +
+                'The AI models could not be loaded. Common causes:\n\n' +
+                '1. Application not served through a web server\n' +
+                '2. CORS or file access restrictions\n' +
+                '3. Models directory not accessible\n\n' +
+                'Solutions:\n' +
+                '✓ Use a web server (python -m http.server 8080)\n' +
+                '✓ Do NOT open index.html directly (file://)\n' +
+                '✓ Access via http://localhost:8080\n' +
+                '✓ Ensure models/ directory has all required files';
         } else if (error.message.includes('webcam') || error.message.includes('camera')) {
-            errorMessage = 'Unable to access camera. Please ensure:\n1. Camera permissions are granted\n2. No other application is using the camera\n3. Your browser supports camera access (use HTTPS or localhost)';
+            errorMessage = '⚠️ Camera Access Error\n\n' +
+                'Unable to access your camera:\n\n' +
+                '✓ Grant camera permissions in browser\n' +
+                '✓ Close other apps using the camera\n' +
+                '✓ Use HTTPS or localhost (not file://)\n' +
+                '✓ Check browser supports camera API';
         } else if (error.name === 'NotAllowedError') {
-            errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings and try again.';
+            errorMessage = '⚠️ Camera Permission Denied\n\n' +
+                'You blocked camera access. To fix:\n\n' +
+                '1. Click the camera icon in address bar\n' +
+                '2. Change permission to "Allow"\n' +
+                '3. Refresh and try again';
         } else if (error.name === 'NotFoundError') {
-            errorMessage = 'No camera found. Please connect a camera device and try again.';
+            errorMessage = '⚠️ No Camera Detected\n\n' +
+                'No camera device found on your system.\n\n' +
+                '✓ Connect a webcam\n' +
+                '✓ Check camera is enabled in BIOS\n' +
+                '✓ Try a different browser';
         } else if (error.name === 'NotReadableError') {
-            errorMessage = 'Camera is already in use by another application. Please close other applications using the camera and try again.';
+            errorMessage = '⚠️ Camera Already in Use\n\n' +
+                'Another application is using your camera.\n\n' +
+                '✓ Close other video apps (Zoom, Teams, etc.)\n' +
+                '✓ Close other browser tabs using camera\n' +
+                '✓ Restart your browser';
         }
         
         showToast(errorMessage, 'error');
@@ -287,7 +322,7 @@ async function startDetection() {
             hideSection(detectionSection);
             currentStep = 'landing';
             updateNavigationButtons();
-        }, 5000);
+        }, 8000); // Increased timeout to give users time to read the detailed message
     }
 }
 
@@ -296,24 +331,49 @@ async function loadModels() {
     try {
         // Check if face-api.js library is loaded
         if (typeof faceapi === 'undefined') {
-            throw new Error('Face-api.js library not loaded. Please check your internet connection and ensure CDN access is not blocked.');
+            throw new Error('LIBRARY_NOT_LOADED: Face-api.js library could not be loaded. This may be due to blocked CDN access or missing local files.');
         }
         
         console.log('Loading face-api.js models from ./models directory...');
+        console.log('Attempting to load models with multiple path strategies...');
         
-        await Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri('./models'),
-            faceapi.nets.faceLandmark68Net.loadFromUri('./models'),
-            faceapi.nets.faceRecognitionNet.loadFromUri('./models'),
-            faceapi.nets.faceExpressionNet.loadFromUri('./models')
-        ]);
+        // Try loading with different path strategies
+        const modelPaths = ['./models', '/models', 'models'];
+        let lastError = null;
         
-        console.log('All face-api.js models loaded successfully');
-        return true;
+        for (const modelPath of modelPaths) {
+            try {
+                console.log(`Trying model path: ${modelPath}`);
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(modelPath),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(modelPath),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(modelPath),
+                    faceapi.nets.faceExpressionNet.loadFromUri(modelPath)
+                ]);
+                
+                console.log(`All face-api.js models loaded successfully from: ${modelPath}`);
+                return true;
+            } catch (error) {
+                console.warn(`Failed to load models from ${modelPath}:`, error);
+                lastError = error;
+                // Continue to next path
+            }
+        }
+        
+        // If we get here, all paths failed
+        console.error('Failed to load models from all attempted paths');
+        console.error('Last error:', lastError);
+        throw new Error('MODEL_LOAD_FAILED: Failed to load AI models from the models directory. Please ensure you are running the application through a web server (not file://) and the models directory is accessible.');
     } catch (error) {
         console.error('Error loading models:', error);
-        console.error('Make sure the models directory exists and contains all required model files');
-        throw new Error('Failed to load AI models. Please ensure the models directory exists and try again.');
+        
+        // Re-throw with specific error type if it's already marked
+        if (error.message.startsWith('LIBRARY_NOT_LOADED:') || error.message.startsWith('MODEL_LOAD_FAILED:')) {
+            throw error;
+        }
+        
+        // Otherwise, wrap it as a model load failure
+        throw new Error('MODEL_LOAD_FAILED: ' + error.message);
     }
 }
 
