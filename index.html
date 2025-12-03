@@ -30,12 +30,452 @@
             <div class="container">
                 <div class="landing-content">
                     <h1>AI-Powered Mental Health Support</h1>
-                    <p>Using facial expression recognition to provide personalized mental wellness advice and interventions.</p>
-                    <button id="start-check-btn" class="btn primary-btn">Start Mental Health Check</button>
+                    <p>Using NLP, machine learning, and facial expression recognition to provide personalized mental wellness assessments and interventions.</p>
+                    
+                    <div class="assessment-options">
+                        <h3>Choose Your Assessment Method</h3>
+                        <div class="option-cards">
+                            <div class="option-card glass" id="chatbot-option">
+                                <i class="fas fa-robot"></i>
+                                <h4>AI Chatbot</h4>
+                                <p>Chat with our AI for personalized mental health support</p>
+                                <button class="btn primary-btn" id="start-chatbot-btn">Start Chatting</button>
+                            </div>
+                            <div class="option-card glass" id="questionnaire-option">
+                                <i class="fas fa-clipboard-list"></i>
+                                <h4>Questionnaire</h4>
+                                <p>Answer validated mental health scales (PHQ-9, GAD-7)</p>
+                                <button class="btn primary-btn" id="start-questionnaire-btn">Start Questionnaire</button>
+                            </div>
+                            <div class="option-card glass" id="text-analysis-option">
+                                <i class="fas fa-comment-dots"></i>
+                                <h4>Text Analysis</h4>
+                                <p>Share your thoughts for NLP sentiment analysis</p>
+                                <button class="btn primary-btn" id="start-text-btn">Express Yourself</button>
+                            </div>
+                            <div class="option-card glass" id="facial-option">
+                                <i class="fas fa-camera"></i>
+                                <h4>Facial Detection</h4>
+                                <p>Use webcam for emotion recognition</p>
+                                <button class="btn primary-btn" id="start-check-btn">Start Detection</button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <p class="privacy-note"><i class="fas fa-shield-alt"></i> Your privacy is important: All processing happens directly in your browser. No data is sent to any server.</p>
                 </div>
                 <div class="landing-image">
                     <img src="assets/images/mental-health-illustration.svg" alt="Mental Health Illustration">
+                </div>
+            </div>
+        </section>
+        
+        <!-- Chatbot User Registration Section -->
+        <section class="chatbot-registration hidden" id="chatbot-registration-section">
+            <div class="container">
+                <h2><i class="fas fa-user-plus"></i> Create Your Profile</h2>
+                <div class="registration-container glass">
+                    <div class="registration-intro">
+                        <p>Please provide your details to personalize your experience. Your information is stored locally and helps us provide better support.</p>
+                    </div>
+                    
+                    <form id="user-registration-form">
+                        <div class="form-group">
+                            <label for="user-name"><i class="fas fa-user"></i> Your Name</label>
+                            <input type="text" id="user-name" placeholder="Enter your name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-email"><i class="fas fa-envelope"></i> Email (Optional)</label>
+                            <input type="email" id="user-email" placeholder="Enter your email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-age"><i class="fas fa-calendar"></i> Age (Optional)</label>
+                            <input type="number" id="user-age" placeholder="Enter your age" min="13" max="120">
+                        </div>
+                        
+                        <div class="form-submit">
+                            <button type="submit" class="btn primary-btn">
+                                <i class="fas fa-arrow-right"></i> Continue to Chat
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Chatbot Section -->
+        <section class="chatbot hidden" id="chatbot-section">
+            <div class="container">
+                <div class="chatbot-header">
+                    <h2><i class="fas fa-robot"></i> MindfulAI Assistant</h2>
+                    <div class="chatbot-actions">
+                        <button class="btn secondary-btn" id="generate-report-btn">
+                            <i class="fas fa-file-alt"></i> Generate Report
+                        </button>
+                        <button class="btn secondary-btn" id="clear-chat-btn">
+                            <i class="fas fa-trash"></i> Clear Chat
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chatbot-container glass">
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="chat-suggestions" id="chat-suggestions">
+                            <span class="suggestion-chip" data-message="I am feeling stressed lately">I am feeling stressed</span>
+                            <span class="suggestion-chip" data-message="I need help with anxiety">Help with anxiety</span>
+                            <span class="suggestion-chip" data-message="I have been feeling sad">Feeling sad</span>
+                            <span class="suggestion-chip" data-message="I want to feel better">Want to feel better</span>
+                        </div>
+                        <div class="chat-input-wrapper">
+                            <textarea id="chat-input" placeholder="Type your message here... Share how you are feeling today." rows="2"></textarea>
+                            <button class="send-btn" id="send-message-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-disclaimer">
+                    <p><i class="fas fa-info-circle"></i> This AI chatbot provides supportive conversation and suggestions. It is not a replacement for professional mental health care.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Report Section -->
+        <section class="report hidden" id="report-section">
+            <div class="container">
+                <h2><i class="fas fa-file-medical-alt"></i> Your Mental Health Report</h2>
+                <div class="report-container glass" id="report-content">
+                    <!-- Report will be populated by JavaScript -->
+                </div>
+                <div class="report-actions">
+                    <button class="btn primary-btn" id="download-report-btn">
+                        <i class="fas fa-download"></i> Download Report
+                    </button>
+                    <button class="btn secondary-btn" id="back-to-chat-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Chat
+                    </button>
+                </div>
+            </div>
+        </section>
+        <section class="questionnaire hidden" id="questionnaire-section">
+            <div class="container">
+                <h2><i class="fas fa-clipboard-list"></i> Mental Health Assessment</h2>
+                <div class="questionnaire-container glass">
+                    <div class="questionnaire-intro">
+                        <p>This assessment uses validated clinical questionnaires to evaluate your mental well-being. Please answer honestly - your responses are completely private and are not stored.</p>
+                    </div>
+                    
+                    <!-- PHQ-9 Depression Questionnaire -->
+                    <div class="questionnaire-section" id="phq9-section">
+                        <h3>PHQ-9: Depression Screening</h3>
+                        <p class="questionnaire-instruction">Over the last 2 weeks, how often have you been bothered by any of the following problems?</p>
+                        
+                        <div class="question-item" data-question="phq9-1">
+                            <p class="question-text">1. Little interest or pleasure in doing things</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-1" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-1" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-1" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-1" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="phq9-2">
+                            <p class="question-text">2. Feeling down, depressed, or hopeless</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-2" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-2" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-2" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-2" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="phq9-3">
+                            <p class="question-text">3. Trouble falling or staying asleep, or sleeping too much</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-3" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-3" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-3" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-3" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="phq9-4">
+                            <p class="question-text">4. Feeling tired or having little energy</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-4" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-4" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-4" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-4" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="phq9-5">
+                            <p class="question-text">5. Poor appetite or overeating</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-5" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-5" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-5" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-5" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="phq9-6">
+                            <p class="question-text">6. Feeling bad about yourself - or that you are a failure or have let yourself or your family down</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-6" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-6" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-6" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-6" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="phq9-7">
+                            <p class="question-text">7. Trouble concentrating on things, such as reading the newspaper or watching television</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-7" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-7" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-7" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-7" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="phq9-8">
+                            <p class="question-text">8. Moving or speaking so slowly that other people could have noticed. Or the opposite - being so fidgety or restless that you have been moving around a lot more than usual</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-8" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-8" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-8" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-8" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="phq9-9">
+                            <p class="question-text">9. Thoughts that you would be better off dead, or of hurting yourself in some way</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="phq9-9" value="0"> Not at all</label>
+                                <label><input type="radio" name="phq9-9" value="1"> Several days</label>
+                                <label><input type="radio" name="phq9-9" value="2"> More than half the days</label>
+                                <label><input type="radio" name="phq9-9" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- GAD-7 Anxiety Questionnaire -->
+                    <div class="questionnaire-section" id="gad7-section">
+                        <h3>GAD-7: Anxiety Screening</h3>
+                        <p class="questionnaire-instruction">Over the last 2 weeks, how often have you been bothered by any of the following problems?</p>
+                        
+                        <div class="question-item" data-question="gad7-1">
+                            <p class="question-text">1. Feeling nervous, anxious, or on edge</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="gad7-1" value="0"> Not at all</label>
+                                <label><input type="radio" name="gad7-1" value="1"> Several days</label>
+                                <label><input type="radio" name="gad7-1" value="2"> More than half the days</label>
+                                <label><input type="radio" name="gad7-1" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="gad7-2">
+                            <p class="question-text">2. Not being able to stop or control worrying</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="gad7-2" value="0"> Not at all</label>
+                                <label><input type="radio" name="gad7-2" value="1"> Several days</label>
+                                <label><input type="radio" name="gad7-2" value="2"> More than half the days</label>
+                                <label><input type="radio" name="gad7-2" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="gad7-3">
+                            <p class="question-text">3. Worrying too much about different things</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="gad7-3" value="0"> Not at all</label>
+                                <label><input type="radio" name="gad7-3" value="1"> Several days</label>
+                                <label><input type="radio" name="gad7-3" value="2"> More than half the days</label>
+                                <label><input type="radio" name="gad7-3" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="gad7-4">
+                            <p class="question-text">4. Trouble relaxing</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="gad7-4" value="0"> Not at all</label>
+                                <label><input type="radio" name="gad7-4" value="1"> Several days</label>
+                                <label><input type="radio" name="gad7-4" value="2"> More than half the days</label>
+                                <label><input type="radio" name="gad7-4" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="gad7-5">
+                            <p class="question-text">5. Being so restless that it is hard to sit still</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="gad7-5" value="0"> Not at all</label>
+                                <label><input type="radio" name="gad7-5" value="1"> Several days</label>
+                                <label><input type="radio" name="gad7-5" value="2"> More than half the days</label>
+                                <label><input type="radio" name="gad7-5" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="gad7-6">
+                            <p class="question-text">6. Becoming easily annoyed or irritable</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="gad7-6" value="0"> Not at all</label>
+                                <label><input type="radio" name="gad7-6" value="1"> Several days</label>
+                                <label><input type="radio" name="gad7-6" value="2"> More than half the days</label>
+                                <label><input type="radio" name="gad7-6" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item" data-question="gad7-7">
+                            <p class="question-text">7. Feeling afraid, as if something awful might happen</p>
+                            <div class="answer-options">
+                                <label><input type="radio" name="gad7-7" value="0"> Not at all</label>
+                                <label><input type="radio" name="gad7-7" value="1"> Several days</label>
+                                <label><input type="radio" name="gad7-7" value="2"> More than half the days</label>
+                                <label><input type="radio" name="gad7-7" value="3"> Nearly every day</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="questionnaire-submit">
+                        <button id="submit-questionnaire-btn" class="btn primary-btn">
+                            <i class="fas fa-paper-plane"></i> Analyze Responses
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Text Analysis Section -->
+        <section class="text-analysis hidden" id="text-analysis-section">
+            <div class="container">
+                <h2><i class="fas fa-comment-dots"></i> Express Your Feelings</h2>
+                <div class="text-analysis-container glass">
+                    <div class="text-intro">
+                        <p>Share your thoughts and feelings in the text box below. Our NLP-powered sentiment analysis will help identify emotional patterns and provide personalized insights.</p>
+                        <p class="text-tips"><i class="fas fa-lightbulb"></i> <strong>Tips:</strong> Write about how you have been feeling lately, what is on your mind, or any challenges you are facing. The more detail you provide, the better our analysis.</p>
+                    </div>
+                    
+                    <div class="text-input-container">
+                        <textarea id="feelings-text" placeholder="Start typing here... For example: 'I have been feeling overwhelmed lately with work and personal responsibilities. Some days I feel motivated, but other days it is hard to get out of bed...'" rows="8"></textarea>
+                        <div class="text-stats">
+                            <span id="word-count">0 words</span>
+                            <span id="char-count">0 characters</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-submit">
+                        <button id="analyze-text-btn" class="btn primary-btn">
+                            <i class="fas fa-search"></i> Analyze Text
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Text Results Section -->
+        <section class="text-results hidden" id="text-results-section">
+            <div class="container">
+                <h2><i class="fas fa-chart-bar"></i> Text Analysis Results</h2>
+                <div class="results-container glass">
+                    <div class="sentiment-results">
+                        <h3>Sentiment Analysis</h3>
+                        <div class="sentiment-meters">
+                            <div class="sentiment-item">
+                                <span class="sentiment-label">Polarity</span>
+                                <div class="sentiment-bar">
+                                    <div class="sentiment-fill" id="polarity-bar"></div>
+                                </div>
+                                <span class="sentiment-value" id="polarity-value">0</span>
+                            </div>
+                            <div class="sentiment-item">
+                                <span class="sentiment-label">Emotional Intensity</span>
+                                <div class="sentiment-bar">
+                                    <div class="sentiment-fill" id="subjectivity-bar"></div>
+                                </div>
+                                <span class="sentiment-value" id="subjectivity-value">0</span>
+                            </div>
+                        </div>
+                        <p class="sentiment-interpretation" id="sentiment-interpretation"></p>
+                    </div>
+                    
+                    <div class="indicators-results">
+                        <h3>Detected Indicators</h3>
+                        <div class="indicators-grid" id="indicators-grid">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="insights-results">
+                        <h3>Insights</h3>
+                        <div class="insights-list" id="insights-list">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="risk-assessment">
+                        <h3>Risk Assessment</h3>
+                        <div class="risk-display" id="risk-display">
+                            <span class="risk-level" id="text-risk-level">Low</span>
+                            <p class="risk-note">This is an AI-based assessment and not a clinical diagnosis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Questionnaire Results Section -->
+        <section class="questionnaire-results hidden" id="questionnaire-results-section">
+            <div class="container">
+                <h2><i class="fas fa-clipboard-check"></i> Assessment Results</h2>
+                <div class="results-container glass">
+                    <div class="score-cards">
+                        <div class="score-card depression-card">
+                            <h4><i class="fas fa-cloud-rain"></i> Depression (PHQ-9)</h4>
+                            <div class="score-display">
+                                <span class="score-number" id="phq9-score">0</span>
+                                <span class="score-max">/ 27</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="phq9-bar"></div>
+                            </div>
+                            <p class="severity-label" id="phq9-severity">Minimal</p>
+                        </div>
+                        
+                        <div class="score-card anxiety-card">
+                            <h4><i class="fas fa-bolt"></i> Anxiety (GAD-7)</h4>
+                            <div class="score-display">
+                                <span class="score-number" id="gad7-score">0</span>
+                                <span class="score-max">/ 21</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="gad7-bar"></div>
+                            </div>
+                            <p class="severity-label" id="gad7-severity">Minimal</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overall-assessment">
+                        <h3>Overall Assessment</h3>
+                        <div class="assessment-display" id="overall-assessment">
+                            <span class="assessment-level" id="overall-risk">Low Risk</span>
+                            <p class="assessment-summary" id="assessment-summary"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="conditions-detected" id="conditions-section">
+                        <h3>Areas of Concern</h3>
+                        <div class="conditions-list" id="conditions-list">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
