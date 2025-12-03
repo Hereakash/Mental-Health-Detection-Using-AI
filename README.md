@@ -35,7 +35,8 @@ An AI-powered software tool designed to identify early signs of mental health is
 - Real-time webcam-based emotion detection using face-api.js
 - Detection of 7 basic emotions: happy, sad, angry, fearful, surprised, disgusted, neutral
 - Confidence scoring for detected emotions
-- **Note**: Requires HTTPS or localhost for camera access. Face-API models are included (~7MB).
+- **Works offline** - face-api.js library and models included locally
+- 📖 [Quick Start Guide](QUICK_START_FACIAL_DETECTION.md) | [Troubleshooting](TROUBLESHOOTING_FACIAL_DETECTION.md)
 
 ### 6. Personalized Interventions
 - Emotion-specific recommendations and coping strategies
@@ -83,6 +84,12 @@ python -m http.server 8080
 # Using Node.js http-server
 npx http-server -p 8080
 # Then visit http://localhost:8080
+```
+
+**Verify Your Setup:**
+```bash
+# Run the verification script to check if everything is configured correctly
+bash verify-setup.sh
 ```
 
 **Important for Facial Detection:**
@@ -260,6 +267,7 @@ Mental-Health-Detection-Using-AI/
 ├── script.js               # Frontend JavaScript
 ├── README.md               # Project documentation
 ├── TROUBLESHOOTING_FACIAL_DETECTION.md  # Facial detection troubleshooting guide
+├── verify-setup.sh         # Setup verification script
 ├── assets/
 │   ├── images/             # Image assets
 │   └── js/
