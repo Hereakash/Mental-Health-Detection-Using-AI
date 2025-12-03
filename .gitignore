@@ -38,7 +38,7 @@ env/
 mental_health.db
 
 # Trained models (auto-generated)
-models/
+backend/models/
 *.joblib
 *.pkl
 

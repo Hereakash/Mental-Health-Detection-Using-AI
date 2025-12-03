@@ -245,9 +245,13 @@ async function startDetection() {
     try {
         // Show loader
         loadingIndicator.classList.remove('hidden');
+        loadingIndicator.innerHTML = '<div class="spinner"></div><p>Loading AI models...</p>';
 
         // Load face-api models
         await loadModels();
+
+        // Update loader message
+        loadingIndicator.innerHTML = '<div class="spinner"></div><p>Requesting camera access...</p>';
 
         // Access webcam
         await startWebcam();
@@ -256,30 +260,66 @@ async function startDetection() {
         startFaceDetection();
     } catch (error) {
         console.error('Error starting detection:', error);
-        showToast('An error occurred while starting the detection process. Please ensure that you have granted camera permissions and try again.', 'error');
+        loadingIndicator.classList.add('hidden');
+        
+        // Provide specific error messages based on error type
+        let errorMessage = 'An error occurred while starting the detection process.';
+        
+        if (error.message.includes('models')) {
+            errorMessage = 'Failed to load AI models. Please check your internet connection and refresh the page.';
+        } else if (error.message.includes('webcam') || error.message.includes('camera')) {
+            errorMessage = 'Unable to access camera. Please ensure:\n1. Camera permissions are granted\n2. No other application is using the camera\n3. Your browser supports camera access (use HTTPS or localhost)';
+        } else if (error.name === 'NotAllowedError') {
+            errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings and try again.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = 'No camera found. Please connect a camera device and try again.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = 'Camera is already in use by another application. Please close other applications using the camera and try again.';
+        }
+        
+        showToast(errorMessage, 'error');
+        
+        // Return to landing page after error
+        setTimeout(() => {
+            showSection(landingSection);
+            hideSection(detectionSection);
+            currentStep = 'landing';
+            updateNavigationButtons();
+        }, 5000);
     }
 }
 
 // Load face-api.js models
 async function loadModels() {
     try {
+        console.log('Loading face-api.js models from ./models directory...');
+        
         await Promise.all([
             faceapi.nets.tinyFaceDetector.loadFromUri('./models'),
             faceapi.nets.faceLandmark68Net.loadFromUri('./models'),
             faceapi.nets.faceRecognitionNet.loadFromUri('./models'),
             faceapi.nets.faceExpressionNet.loadFromUri('./models')
         ]);
-        loadingIndicator.classList.add('hidden');
+        
+        console.log('All face-api.js models loaded successfully');
         return true;
     } catch (error) {
         console.error('Error loading models:', error);
-        throw new Error('Failed to load AI models');
+        console.error('Make sure the models directory exists and contains all required model files');
+        throw new Error('Failed to load AI models. Please ensure the models directory exists and try again.');
     }
 }
 
 // Start webcam access
 async function startWebcam() {
     try {
+        // Check if getUserMedia is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('Your browser does not support camera access. Please use a modern browser like Chrome, Firefox, or Edge.');
+        }
+        
+        console.log('Requesting camera access...');
+        
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
                 width: { ideal: 640 },
@@ -287,16 +327,42 @@ async function startWebcam() {
                 facingMode: 'user'
             }
         });
+        
+        console.log('Camera access granted');
         webcamElement.srcObject = stream;
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             webcamElement.onloadedmetadata = () => {
-                // Ensure video element has correct display size for overlay calculations
-                resolve(true);
+                console.log('Video metadata loaded, starting playback');
+                webcamElement.play()
+                    .then(() => {
+                        console.log('Video playback started successfully');
+                        resolve(true);
+                    })
+                    .catch((playError) => {
+                        console.error('Error playing video:', playError);
+                        reject(new Error('Failed to start video playback'));
+                    });
             };
+            
+            webcamElement.onerror = (error) => {
+                console.error('Video element error:', error);
+                reject(new Error('Failed to load video stream'));
+            };
+            
+            // Timeout after 10 seconds
+            setTimeout(() => {
+                reject(new Error('Camera initialization timed out'));
+            }, 10000);
         });
     } catch (error) {
         console.error('Error accessing webcam:', error);
+        
+        // Preserve the original error for better debugging
+        if (error.name) {
+            throw error;
+        }
+        
         throw new Error('Failed to access webcam. Please ensure camera permissions are granted.');
     }
 }
@@ -304,6 +370,11 @@ async function startWebcam() {
 // Start face detection
 function startFaceDetection() {
     const canvas = overlayCanvas;
+    
+    // Hide loading indicator once detection starts
+    loadingIndicator.classList.add('hidden');
+    
+    console.log('Starting face detection loop...');
 
     faceDetectionInterval = setInterval(async () => {
         // Use actual video dimensions
@@ -314,30 +385,35 @@ function startFaceDetection() {
         canvas.width = displayWidth;
         canvas.height = displayHeight;
 
-        const detections = await faceapi
-            .detectAllFaces(webcamElement, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceExpressions();
+        try {
+            const detections = await faceapi
+                .detectAllFaces(webcamElement, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceExpressions();
 
-        const displaySize = { width: displayWidth, height: displayHeight };
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+            const displaySize = { width: displayWidth, height: displayHeight };
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
 
-        // Clear the canvas
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Clear the canvas
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw detections
-        faceapi.draw.drawDetections(canvas, resizedDetections);
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-        faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+            // Draw detections
+            faceapi.draw.drawDetections(canvas, resizedDetections);
+            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
 
-        // Process detected emotions
-        if (detections.length > 0) {
-            const expressions = detections[0].expressions;
-            processEmotions(expressions);
-        } else {
-            emotionText.textContent = 'No face detected';
-            confidenceText.textContent = '';
+            // Process detected emotions
+            if (detections.length > 0) {
+                const expressions = detections[0].expressions;
+                processEmotions(expressions);
+            } else {
+                emotionText.textContent = 'No face detected';
+                confidenceText.textContent = '';
+            }
+        } catch (detectionError) {
+            console.error('Error during face detection:', detectionError);
+            // Continue running even if one frame fails
         }
     }, 120);
 
