@@ -8,6 +8,8 @@ const HISTORY_MAX_LENGTH = 5;
 // Facial detection configuration
 const ERROR_MESSAGE_TIMEOUT = 8000; // Time in ms to show error before returning to landing
 const MODEL_PATHS = ['./models', '/models', 'models']; // Paths to try for loading models
+const ERROR_PREFIX_LIBRARY = 'LIBRARY_NOT_LOADED:'; // Error prefix for library loading failures
+const ERROR_PREFIX_MODELS = 'MODEL_LOAD_FAILED:'; // Error prefix for model loading failures
 
 // Chatbot variables
 let chatHistory = [];
@@ -270,7 +272,7 @@ async function startDetection() {
         let errorMessage = 'An error occurred while starting the detection process.';
         
         // Check for specific error types
-        if (error.message.startsWith('LIBRARY_NOT_LOADED:')) {
+        if (error.message.startsWith(ERROR_PREFIX_LIBRARY)) {
             errorMessage = '⚠️ Face-API.js Library Not Loaded\n\n' +
                 'The face-api.js library could not be loaded. This is usually because:\n\n' +
                 '1. CDN is blocked by your network/firewall/ad-blocker\n' +
@@ -280,7 +282,7 @@ async function startDetection() {
                 '✓ Check your network/firewall settings\n' +
                 '✓ Ensure assets/js/face-api.min.js exists\n' +
                 '✓ Try refreshing the page';
-        } else if (error.message.startsWith('MODEL_LOAD_FAILED:')) {
+        } else if (error.message.startsWith(ERROR_PREFIX_MODELS)) {
             errorMessage = '⚠️ AI Models Failed to Load\n\n' +
                 'The AI models could not be loaded. Common causes:\n\n' +
                 '1. Application not served through a web server\n' +
@@ -335,7 +337,7 @@ async function loadModels() {
     try {
         // Check if face-api.js library is loaded
         if (typeof faceapi === 'undefined') {
-            throw new Error('LIBRARY_NOT_LOADED: Face-api.js library could not be loaded. This may be due to blocked CDN access or missing local files.');
+            throw new Error(`${ERROR_PREFIX_LIBRARY} Face-api.js library could not be loaded. This may be due to blocked CDN access or missing local files.`);
         }
         
         console.log('Loading face-api.js models from ./models directory...');
@@ -366,17 +368,17 @@ async function loadModels() {
         // If we get here, all paths failed
         console.error('Failed to load models from all attempted paths');
         console.error('Last error:', lastError);
-        throw new Error('MODEL_LOAD_FAILED: Failed to load AI models from the models directory. Please ensure you are running the application through a web server (not file://) and the models directory is accessible.');
+        throw new Error(`${ERROR_PREFIX_MODELS} Failed to load AI models from the models directory. Please ensure you are running the application through a web server (not file://) and the models directory is accessible.`);
     } catch (error) {
         console.error('Error loading models:', error);
         
         // Re-throw with specific error type if it's already marked
-        if (error.message.startsWith('LIBRARY_NOT_LOADED:') || error.message.startsWith('MODEL_LOAD_FAILED:')) {
+        if (error.message.startsWith(ERROR_PREFIX_LIBRARY) || error.message.startsWith(ERROR_PREFIX_MODELS)) {
             throw error;
         }
         
         // Otherwise, wrap it as a model load failure
-        throw new Error('MODEL_LOAD_FAILED: ' + error.message);
+        throw new Error(`${ERROR_PREFIX_MODELS} ${error.message}`);
     }
 }
 
