@@ -8,7 +8,19 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <!-- Load face-api.js locally first, fallback to CDN if local fails -->
-    <script src="assets/js/face-api.min.js" onerror="this.onerror=null; this.remove(); var script = document.createElement('script'); script.src='https://cdn.jsdelivr.net/npm/face-api.js'; document.head.appendChild(script);"></script>
+    <script src="assets/js/face-api.min.js" onerror="loadFaceApiFromCDN()"></script>
+    <script>
+        // Fallback function to load face-api.js from CDN if local file fails
+        function loadFaceApiFromCDN() {
+            console.warn('Local face-api.js failed to load, falling back to CDN...');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/face-api.js';
+            script.onerror = function() {
+                console.error('Failed to load face-api.js from both local and CDN sources');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
 </head>
 <body>
     <header>

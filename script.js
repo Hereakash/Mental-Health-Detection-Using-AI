@@ -5,6 +5,10 @@ let faceDetectionInterval;
 let emotionHistory = [];
 const HISTORY_MAX_LENGTH = 5;
 
+// Facial detection configuration
+const ERROR_MESSAGE_TIMEOUT = 8000; // Time in ms to show error before returning to landing
+const MODEL_PATHS = ['./models', '/models', 'models']; // Paths to try for loading models
+
 // Chatbot variables
 let chatHistory = [];
 let userData = null;
@@ -322,7 +326,7 @@ async function startDetection() {
             hideSection(detectionSection);
             currentStep = 'landing';
             updateNavigationButtons();
-        }, 8000); // Increased timeout to give users time to read the detailed message
+        }, ERROR_MESSAGE_TIMEOUT);
     }
 }
 
@@ -338,10 +342,9 @@ async function loadModels() {
         console.log('Attempting to load models with multiple path strategies...');
         
         // Try loading with different path strategies
-        const modelPaths = ['./models', '/models', 'models'];
         let lastError = null;
         
-        for (const modelPath of modelPaths) {
+        for (const modelPath of MODEL_PATHS) {
             try {
                 console.log(`Trying model path: ${modelPath}`);
                 await Promise.all([

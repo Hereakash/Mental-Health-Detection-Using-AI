@@ -20,6 +20,8 @@ WARNINGS=0
 # Check 1: Face-API.js library
 echo -n "Checking face-api.js library... "
 if [ -f "assets/js/face-api.min.js" ]; then
+    # Try macOS stat syntax first, fallback to Linux syntax
+    # macOS uses -f%z, Linux uses -c%s
     SIZE=$(stat -f%z "assets/js/face-api.min.js" 2>/dev/null || stat -c%s "assets/js/face-api.min.js" 2>/dev/null)
     if [ "$SIZE" -gt 600000 ]; then
         echo -e "${GREEN}✓ OK${NC} ($SIZE bytes)"
