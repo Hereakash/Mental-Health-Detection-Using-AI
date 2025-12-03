@@ -26,15 +26,14 @@ from ml_model import get_model, MentalHealthMLModel
 
 app = Flask(__name__)
 # Configure CORS to allow requests from GitHub Pages and other deployment platforms
+# In production, consider using environment variables to specify exact allowed origins
+allowed_origins = os.getenv('CORS_ORIGINS', 
+    'http://localhost:*,http://127.0.0.1:*,https://*.github.io,https://*.vercel.app,https://*.netlify.app'
+).split(',')
+
 CORS(app, resources={
     r"/api/*": {
-        "origins": [
-            "http://localhost:*",
-            "http://127.0.0.1:*",
-            "https://*.github.io",
-            "https://*.vercel.app",
-            "https://*.netlify.app"
-        ],
+        "origins": allowed_origins,
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
