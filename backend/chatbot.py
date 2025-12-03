@@ -339,6 +339,17 @@ except ImportError:
 # Supports both common names
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 
+# Validate API key format if present
+if GEMINI_API_KEY:
+    # Check if API key has expected format (starts with 'AIza' and is 39 characters)
+    if not GEMINI_API_KEY.startswith("AIza") or len(GEMINI_API_KEY) != 39:
+        import warnings
+        warnings.warn(
+            "GEMINI_API_KEY may be invalid. Expected format: starts with 'AIza' and is 39 characters long. "
+            "Chatbot will fall back to rule-based responses if API calls fail.",
+            UserWarning
+        )
+
 class MentalHealthChatbot:
     """
     AI-powered chatbot for mental health support.

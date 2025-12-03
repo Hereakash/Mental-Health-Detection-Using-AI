@@ -233,14 +233,20 @@ Error: Model gemini-1.5-flash not found
 
 1. **Use a valid model name:**
    ```bash
-   export GEMINI_MODEL="gemini-pro"
-   # or
+   # Recommended default (faster, more cost-effective)
    export GEMINI_MODEL="gemini-1.5-flash"
+   
+   # Alternative (may have different capabilities)
+   export GEMINI_MODEL="gemini-pro"
    ```
+   
+   **Model Comparison:**
+   - `gemini-1.5-flash`: Faster response time, lower cost, recommended for most use cases
+   - `gemini-pro`: May offer different capabilities, check Google AI docs for specifics
 
 2. **Check available models** in [Google AI documentation](https://ai.google.dev/)
 
-3. **Remove model specification** to use default:
+3. **Remove model specification** to use default (gemini-1.5-flash):
    ```bash
    unset GEMINI_MODEL
    ```
