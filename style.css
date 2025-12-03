@@ -1679,7 +1679,6 @@ footer .container {
 
 .modal-overlay.hidden {
     display: none;
-    opacity: 0;
 }
 
 .modal-content {

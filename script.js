@@ -188,55 +188,58 @@ function showConfirmationModal(title, message) {
         if (modalTitle) modalTitle.textContent = title;
         if (modalDescription) modalDescription.textContent = message;
         
+        let escapeHandler, outsideClickHandler, confirmHandler, cancelHandler;
+        
+        const cleanup = () => {
+            // Remove all event listeners
+            if (escapeHandler) document.removeEventListener('keydown', escapeHandler);
+            if (outsideClickHandler && confirmationModal) confirmationModal.removeEventListener('click', outsideClickHandler);
+            if (confirmHandler && modalConfirmBtn) modalConfirmBtn.removeEventListener('click', confirmHandler);
+            if (cancelHandler && modalCancelBtn) modalCancelBtn.removeEventListener('click', cancelHandler);
+        };
+        
+        confirmHandler = () => {
+            hideConfirmationModal();
+            cleanup();
+            resolve(true);
+        };
+        
+        cancelHandler = () => {
+            hideConfirmationModal();
+            cleanup();
+            resolve(false);
+        };
+        
+        // Add event listeners
+        if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', confirmHandler);
+        if (modalCancelBtn) modalCancelBtn.addEventListener('click', cancelHandler);
+        
+        // Handle escape key
+        escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                hideConfirmationModal();
+                cleanup();
+                resolve(false);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+        
+        // Handle clicking outside modal
+        outsideClickHandler = (e) => {
+            if (e.target === confirmationModal) {
+                hideConfirmationModal();
+                cleanup();
+                resolve(false);
+            }
+        };
+        if (confirmationModal) {
+            confirmationModal.addEventListener('click', outsideClickHandler);
+        }
+        
         if (confirmationModal) {
             confirmationModal.classList.remove('hidden');
             // Focus on the confirm button for accessibility
             if (modalConfirmBtn) modalConfirmBtn.focus();
-        }
-        
-        const handleConfirm = () => {
-            hideConfirmationModal();
-            resolve(true);
-        };
-        
-        const handleCancel = () => {
-            hideConfirmationModal();
-            resolve(false);
-        };
-        
-        // Remove any existing event listeners
-        if (modalConfirmBtn) {
-            const newConfirmBtn = modalConfirmBtn.cloneNode(true);
-            modalConfirmBtn.parentNode.replaceChild(newConfirmBtn, modalConfirmBtn);
-            newConfirmBtn.addEventListener('click', handleConfirm);
-        }
-        
-        if (modalCancelBtn) {
-            const newCancelBtn = modalCancelBtn.cloneNode(true);
-            modalCancelBtn.parentNode.replaceChild(newCancelBtn, modalCancelBtn);
-            newCancelBtn.addEventListener('click', handleCancel);
-        }
-        
-        // Handle escape key
-        const handleEscape = (e) => {
-            if (e.key === 'Escape') {
-                hideConfirmationModal();
-                resolve(false);
-                document.removeEventListener('keydown', handleEscape);
-            }
-        };
-        document.addEventListener('keydown', handleEscape);
-        
-        // Handle clicking outside modal
-        const handleOutsideClick = (e) => {
-            if (e.target === confirmationModal) {
-                hideConfirmationModal();
-                resolve(false);
-                confirmationModal.removeEventListener('click', handleOutsideClick);
-            }
-        };
-        if (confirmationModal) {
-            confirmationModal.addEventListener('click', handleOutsideClick);
         }
     });
 }
