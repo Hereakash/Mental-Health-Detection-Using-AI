@@ -35,6 +35,7 @@ An AI-powered software tool designed to identify early signs of mental health is
 - Real-time webcam-based emotion detection using face-api.js
 - Detection of 7 basic emotions: happy, sad, angry, fearful, surprised, disgusted, neutral
 - Confidence scoring for detected emotions
+- **Note**: Requires HTTPS or localhost for camera access. Face-API models are included (~7MB).
 
 ### 6. Personalized Interventions
 - Emotion-specific recommendations and coping strategies
@@ -62,16 +63,35 @@ An AI-powered software tool designed to identify early signs of mental health is
 
 ## Installation
 
+### Prerequisites
+
+**For Facial Detection Feature:**
+- Modern web browser with webcam support (Chrome, Firefox, Edge, Safari)
+- HTTPS connection OR localhost (required for camera access)
+- Camera permissions granted to the browser
+- **Internet connection** (required to load face-api.js library from CDN)
+- Face-API.js models are included in the `models/` directory (~7MB)
+
 ### Frontend (Static Files)
 Simply open `index.html` in a web browser, or serve with any static file server:
 
 ```bash
 # Using Python's built-in server
 python -m http.server 8080
+# Then visit http://localhost:8080
 
 # Using Node.js http-server
 npx http-server
+# Then visit http://localhost:8080
 ```
+
+**Important for Facial Detection:**
+- The application must be served over HTTPS or from localhost
+- Camera access will not work when opening the HTML file directly (file://)
+- Ensure no other application is using your camera
+- **Internet connection is required** to load the face-api.js library from CDN
+- For offline use, see [Offline Setup Guide](docs/OFFLINE_SETUP.md)
+
 
 ### Backend (For Database, AI Chatbot, and ML Features)
 ```bash
@@ -240,6 +260,12 @@ Mental-Health-Detection-Using-AI/
 ├── README.md               # Project documentation
 ├── assets/
 │   └── images/             # Image assets
+├── models/                 # Face-API.js models for facial detection (~7MB)
+│   ├── README.md           # Models documentation
+│   ├── tiny_face_detector_model-*
+│   ├── face_landmark_68_model-*
+│   ├── face_recognition_model-*
+│   └── face_expression_model-*
 ├── backend/
 │   ├── app.py              # Flask API server
 │   ├── database.py         # SQLite database operations
@@ -248,14 +274,14 @@ Mental-Health-Detection-Using-AI/
 │   ├── train_model.py      # Standalone training script
 │   ├── mental_health_predictor.py  # Clinical scale scoring
 │   ├── text_analyzer.py    # NLP text analysis
-│   └── requirements.txt    # Python dependencies
+│   ├── requirements.txt    # Python dependencies
+│   └── models/             # Trained ML models (auto-generated)
 ├── datasets/               # Training datasets
 │   ├── README.md           # Dataset documentation
 │   ├── sample_dataset.csv  # Sample training data (40 examples)
 │   └── template_dataset.csv # Empty template for custom datasets
 ├── docs/
 │   └── MODEL_TRAINING.md   # Comprehensive model training guide
-├── models/                 # Trained ML models (auto-generated)
 └── mental_health.db        # SQLite database (auto-generated)
 ```
 
@@ -311,6 +337,49 @@ Mental-Health-Detection-Using-AI/
 - **Data Encryption**: SQLite database stored locally
 - **No External Tracking**: No analytics or tracking scripts
 - **API Key Security**: OpenAI key stored as environment variable
+
+## Troubleshooting
+
+### Facial Detection Issues
+
+**Problem: "Failed to load AI models"**
+- **Solution**: Ensure you're running the app from a web server (not opening the HTML file directly)
+- The `models/` directory must be accessible and contain all face-api.js model files
+- Check browser console for specific errors
+- **Verify you have an active internet connection** (required to load face-api.js library from CDN)
+- If using a firewall or ad-blocker, ensure cdn.jsdelivr.net is not blocked
+
+**Problem: "Camera access denied" or "Unable to access camera"**
+- **Solution 1**: Grant camera permissions in your browser
+  - Chrome: Click the camera icon in the address bar → Allow
+  - Firefox: Click the shield/lock icon → Permissions → Camera → Allow
+  - Safari: Safari menu → Settings for This Website → Camera → Allow
+- **Solution 2**: Ensure you're using HTTPS or localhost
+  - Camera access requires a secure context
+  - Use `python -m http.server 8080` and visit `http://localhost:8080`
+- **Solution 3**: Check if another application is using the camera
+  - Close other video conferencing apps (Zoom, Teams, etc.)
+  - Restart your browser
+
+**Problem: "No camera found"**
+- **Solution**: Connect a webcam device and refresh the page
+- Verify your camera works in other applications
+
+**Problem: "Camera initialization timed out"**
+- **Solution**: 
+  - Refresh the page and try again
+  - Check if your camera drivers are up to date
+  - Try a different browser
+
+### Backend/API Issues
+
+**Problem: Backend server won't start**
+- **Solution**: Ensure all dependencies are installed: `pip install -r backend/requirements.txt`
+- Check if port 5000 is already in use
+
+**Problem: OpenAI chatbot not working**
+- **Solution**: The app falls back to rule-based responses if no API key is set
+- Set `OPENAI_API_KEY` environment variable for AI-powered responses
 
 ## Disclaimer
 
