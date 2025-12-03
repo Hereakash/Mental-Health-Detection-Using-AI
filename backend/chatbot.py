@@ -330,8 +330,7 @@ except ImportError:
 
 # Get Gemini API key from environment variables
 # Supports both common names
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-
+GEMINI_API_KEY = "AIzaSyBNKNkWQuCsuCho1XntQZcEqsy2VwC4qzA"
 
 class MentalHealthChatbot:
     """
