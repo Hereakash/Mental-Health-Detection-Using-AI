@@ -92,6 +92,8 @@ python app.py
 
 The system includes machine learning models that can be trained to predict mental health risk levels from text.
 
+> 📘 **Quick Reference:** See [Quick Start Guide](docs/QUICK_START.md) for the fastest way to get started!
+
 ### Quick Start - Train a Model
 
 ```bash
