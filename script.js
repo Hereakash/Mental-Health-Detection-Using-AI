@@ -27,7 +27,10 @@ const TYPING_DELAY_MIN = 1000;
 const TYPING_DELAY_MAX = 2000;
 
 // API Base URL (for backend integration)
-const API_BASE_URL = 'http://localhost:5000/api';
+// Auto-detect environment: use production backend URL if deployed, otherwise use localhost
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://mental-health-backend.onrender.com/api'; // Update this URL when you deploy the backend
 
 // DOM Elements
 const landingSection = document.getElementById('landing-section');

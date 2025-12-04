@@ -2,6 +2,17 @@
 
 An AI-powered software tool designed to identify early signs of mental health issues such as depression, anxiety, or stress based on user responses, behavioral data, and linguistic analysis.
 
+## 🚀 Quick Deploy
+
+**Frontend (GitHub Pages)**: 
+1. Enable GitHub Pages in repository Settings → Pages → Source: "GitHub Actions"
+2. Push to `main` branch - automatic deployment via GitHub Actions
+3. Access at: `https://[username].github.io/Mental-Health-Detection-Using-AI/`
+
+**Backend (Render/Railway/Heroku)**: Deploy to a Python hosting service - see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+📖 **Full Deployment Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for complete step-by-step instructions.
+
 ## Features
 
 ### 1. AI Chatbot (NEW!)
