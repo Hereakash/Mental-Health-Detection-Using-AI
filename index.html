@@ -92,6 +92,18 @@
                         <p>Please provide your details to personalize your experience. Your information is stored locally and helps us provide better support.</p>
                     </div>
                     
+                    <div class="existing-account-notice hidden" id="existing-account-notice">
+                        <p><i class="fas fa-info-circle"></i> An account already exists. You can continue with the existing account or create a new one.</p>
+                        <div class="existing-account-options">
+                            <button type="button" class="btn primary-btn" id="continue-existing-btn">
+                                <i class="fas fa-user"></i> Continue as <span id="existing-user-name"></span>
+                            </button>
+                            <button type="button" class="btn secondary-btn" id="create-new-account-btn">
+                                <i class="fas fa-user-plus"></i> Create New Account
+                            </button>
+                        </div>
+                    </div>
+                    
                     <form id="user-registration-form">
                         <div class="form-group">
                             <label for="user-name"><i class="fas fa-user"></i> Your Name</label>
@@ -123,12 +135,18 @@
             <div class="container">
                 <div class="chatbot-header">
                     <h2><i class="fas fa-robot"></i> MindfulAI Assistant</h2>
+                    <div class="user-info" id="user-info-display">
+                        <span class="user-name-display" id="user-name-display"></span>
+                    </div>
                     <div class="chatbot-actions">
                         <button class="btn secondary-btn" id="generate-report-btn">
                             <i class="fas fa-file-alt"></i> Generate Report
                         </button>
                         <button class="btn secondary-btn" id="clear-chat-btn">
                             <i class="fas fa-trash"></i> Clear Chat
+                        </button>
+                        <button class="btn secondary-btn" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
                         </button>
                     </div>
                 </div>
@@ -560,6 +578,18 @@
             </div>
         </div>
     </footer>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay hidden" id="confirmation-modal" role="dialog" aria-labelledby="modal-title" aria-describedby="modal-description" aria-modal="true">
+        <div class="modal-content glass">
+            <h3 id="modal-title"></h3>
+            <p id="modal-description"></p>
+            <div class="modal-actions">
+                <button class="btn secondary-btn" id="modal-cancel-btn">Cancel</button>
+                <button class="btn primary-btn" id="modal-confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
 
     <div class="navigation-controls">
         <button id="back-btn" class="btn secondary-btn hidden"><i class="fas fa-arrow-left"></i> Back</button>
