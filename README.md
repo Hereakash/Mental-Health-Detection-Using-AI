@@ -1,448 +1,922 @@
-# Mental Health Early Detection & Intervention System
+# 🧠 Mental Health Detection Using AI
 
-An AI-powered software tool designed to identify early signs of mental health issues such as depression, anxiety, or stress based on user responses, behavioral data, and linguistic analysis.
+<div align="center">
 
-## 🚀 Quick Deploy
+![Mental Health AI](https://img.shields.io/badge/Mental%20Health-AI%20Powered-blue)
+![Python](https://img.shields.io/badge/Python-3.8+-green)
+![Flask](https://img.shields.io/badge/Flask-2.3+-red)
+![Gemini API](https://img.shields.io/badge/Google-Gemini%20API-yellow)
+![License](https://img.shields.io/badge/License-MIT-purple)
 
-**Frontend (GitHub Pages)**: 
-1. Enable GitHub Pages in repository Settings → Pages → Source: "GitHub Actions"
-2. Push to `main` branch - automatic deployment via GitHub Actions
-3. Access at: `https://[username].github.io/Mental-Health-Detection-Using-AI/`
+**An AI-powered mental health detection and support system using Google Gemini API, NLP, Machine Learning, and Facial Expression Recognition**
 
-**Backend (Render/Railway/Heroku)**: Deploy to a Python hosting service - see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+</div>
 
-📖 **Full Deployment Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for complete step-by-step instructions.
+---
 
-## Features
+## 📋 Table of Contents
 
-### 1. AI Chatbot (NEW!)
-- **Conversational AI**: Chat with MindfulAI for personalized mental health support
-- **OpenAI GPT Integration**: Uses GPT-3.5/4 when API key is configured
-- **Rule-based Fallback**: Works without API key using pattern matching
-- **Emotion Detection**: Analyzes messages for emotions and mental health concerns
-- **User Profile Storage**: Save user details in SQLite database
-- **Chat History**: Persistent conversation storage across sessions
-- **Report Generation**: Generate downloadable assessment reports
+- [Overview](#-overview)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Architecture](#-project-architecture)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+- [Google Gemini API Configuration](#-google-gemini-api-configuration)
+- [Usage](#-usage)
+- [API Documentation](#-api-documentation)
+- [Project Structure](#-project-structure)
+- [Environment Variables](#-environment-variables)
+- [Database Schema](#-database-schema)
+- [Machine Learning Models](#-machine-learning-models)
+- [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Credits](#-credits)
 
-### 2. Self-Assessment Questionnaire
-- **PHQ-9 (Patient Health Questionnaire-9)**: Validated clinical tool for depression screening
-- **GAD-7 (Generalized Anxiety Disorder-7)**: Validated clinical tool for anxiety screening
-- Instant scoring and severity classification
-- Risk level assessment with personalized recommendations
+---
 
-### 3. Text Analysis (NLP-based)
-- Sentiment analysis to detect emotional tone
-- Mental health indicator detection (depression, anxiety, stress keywords)
-- Linguistic pattern analysis
-- Real-time insights and risk assessment
+## 🌟 Overview
 
-### 4. Machine Learning Model (NEW!)
-- **Model Training**: Train on mental health text datasets
-- **Multiple Algorithms**: Logistic Regression, Random Forest, Gradient Boosting
-- **TF-IDF Features**: Text vectorization with n-grams
-- **Risk Prediction**: Predict low/moderate/high risk from text
+**MindfulAI** is a comprehensive mental health detection and early intervention system that leverages artificial intelligence to provide personalized mental wellness assessments. The system integrates multiple assessment methods including:
 
-### 5. Facial Emotion Recognition
-- Real-time webcam-based emotion detection using face-api.js
-- Detection of 7 basic emotions: happy, sad, angry, fearful, surprised, disgusted, neutral
-- Confidence scoring for detected emotions
-- **Works offline** - face-api.js library and models included locally
-- 📖 [Quick Start Guide](QUICK_START_FACIAL_DETECTION.md) | [Troubleshooting](TROUBLESHOOTING_FACIAL_DETECTION.md)
+- **AI-Powered Chatbot**: Conversational support using Google Gemini API
+- **Validated Questionnaires**: PHQ-9 (depression) and GAD-7 (anxiety) assessments
+- **NLP Text Analysis**: Sentiment analysis and mental health indicator detection
+- **Facial Expression Recognition**: Real-time emotion detection using face-api.js
 
-### 6. Personalized Interventions
-- Emotion-specific recommendations and coping strategies
-- Guided breathing exercises
-- Mindfulness and relaxation techniques
-- Crisis resources and professional help information
+The goal is to help individuals identify early signs of mental health concerns and provide evidence-based coping strategies and professional resource recommendations.
 
-## Tech Stack
+---
+
+## ✨ Features
+
+### 🤖 AI Chatbot (Google Gemini Integration)
+- **Empathetic Conversations**: AI-powered chatbot using Google Gemini API for compassionate, context-aware responses
+- **Fallback System**: Rule-based responses when API is unavailable
+- **Emotion Detection**: Identifies emotions (anxiety, depression, stress) from conversations
+- **Risk Assessment**: Automatic risk level evaluation (low, moderate, high)
+- **Crisis Detection**: Immediate crisis intervention resources for high-risk situations
+- **Chat History**: Persistent conversation tracking and analysis
+
+### 📊 Mental Health Assessments
+- **PHQ-9 Depression Scale**: Standardized 9-item depression questionnaire
+- **GAD-7 Anxiety Scale**: Validated 7-item generalized anxiety disorder assessment
+- **Text Analysis**: NLP-based sentiment and mental health indicator detection
+- **Combined Analysis**: Multi-modal assessment combining questionnaire, text, and facial data
+- **Personalized Recommendations**: Evidence-based coping strategies and resources
+
+### 🎭 Facial Expression Recognition
+- **Real-time Detection**: Webcam-based facial emotion recognition
+- **Emotion Tracking**: Continuous monitoring and emotion history
+- **Face-api.js Integration**: Client-side processing for privacy
+
+### 📈 Machine Learning
+- **Custom ML Models**: Scikit-learn based risk prediction models
+- **Multiple Algorithms**: Support for Logistic Regression, Random Forest, Gradient Boosting
+- **Model Training**: Capability to train on custom datasets
+- **Persistent Storage**: Trained models saved with joblib
+
+### 💾 User Management & Data Persistence
+- **SQLite Database**: Local data storage for users, chats, and assessments
+- **User Profiles**: Personalized experiences with user tracking
+- **Assessment History**: Track mental health journey over time
+- **Comprehensive Reports**: Generate detailed mental health reports
+
+### 🔒 Privacy & Security
+- **Local Processing**: Facial detection runs entirely in browser
+- **Secure API Usage**: Environment-based API key management
+- **Data Encryption**: SQLite database with proper access controls
+- **No External Data Sharing**: User data remains on local server
+
+---
+
+## 🛠 Tech Stack
+
+### Backend
+- **Python 3.8+**: Core programming language
+- **Flask 2.3+**: Web framework and REST API
+- **Google Generative AI (Gemini)**: AI chatbot capabilities
+- **Scikit-learn**: Machine learning models
+- **SQLite3**: Database for persistence
+- **Pandas & NumPy**: Data manipulation
+- **Joblib**: Model serialization
 
 ### Frontend
-- HTML5, CSS3 (with CSS Variables for theming)
-- Vanilla JavaScript
-- face-api.js for facial emotion recognition
-- Font Awesome for icons
-- Responsive design with glassmorphism UI
+- **HTML5**: Semantic markup
+- **CSS3**: Styling with modern features
+- **JavaScript (ES6+)**: Interactive functionality
+- **Face-api.js**: Facial expression recognition
+- **Font Awesome**: Icons
 
-### Backend (Python Flask)
-- Flask web framework
-- **SQLite Database**: User profiles, chat history, assessments
-- **OpenAI API Integration**: AI-powered chatbot responses
-- **Scikit-learn**: ML model training and predictions
-- Mental health prediction module
-- Text analysis module with NLP
-- RESTful API endpoints
+### APIs & Libraries
+- **Google Gemini API**: AI-powered conversational responses
+- **Flask-CORS**: Cross-origin resource sharing
+- **Gunicorn**: Production WSGI server
 
-## Installation
+---
 
-### Prerequisites
+## 🏗 Project Architecture
 
-**For Facial Detection Feature:**
-- Modern web browser with webcam support (Chrome, Firefox, Edge, Safari)
-- HTTPS connection OR localhost (required for camera access)
-- Camera permissions granted to the browser
-- Face-API.js library (included locally in `assets/js/`) with CDN fallback
-- Face-API.js models are included in the `models/` directory (~7MB)
-
-### Frontend (Static Files)
-**⚠️ IMPORTANT**: The application MUST be served through a web server (not opened directly).
-
-```bash
-# Using Python's built-in server (recommended)
-python -m http.server 8080
-# Then visit http://localhost:8080
-
-# Using Node.js http-server
-npx http-server -p 8080
-# Then visit http://localhost:8080
+```
+┌─────────────────┐
+│   Frontend      │
+│  (HTML/CSS/JS)  │
+│  Face-api.js    │
+└────────┬────────┘
+         │
+         │ HTTP/REST API
+         │
+┌────────▼────────┐       ┌──────────────┐
+│  Flask Backend  │◄─────►│ Google       │
+│                 │       │ Gemini API   │
+│  - Chatbot      │       └──────────────┘
+│  - ML Models    │
+│  - NLP Analysis │       ┌──────────────┐
+│  - User Mgmt    │◄─────►│   SQLite     │
+│                 │       │   Database   │
+└─────────────────┘       └──────────────┘
 ```
 
-**Verify Your Setup:**
+---
+
+## 📦 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Python 3.8 or higher**
+- **pip** (Python package manager)
+- **Git**
+- **A modern web browser** (Chrome, Firefox, Edge, Safari)
+- **Webcam** (optional, for facial detection feature)
+- **Google Gemini API Key** (for AI chatbot functionality)
+
+---
+
+## 🚀 Installation
+
+### Clone the Repository
+
 ```bash
-# Run the verification script to check if everything is configured correctly
-bash verify-setup.sh
+git clone https://github.com/Hereakash/Mental-Health-Detection-Using-AI.git
+cd Mental-Health-Detection-Using-AI
 ```
 
-**Important for Facial Detection:**
-- ✅ The application must be served over HTTPS or from localhost
-- ❌ Camera access will NOT work when opening the HTML file directly (file://)
-- ✅ Ensure no other application is using your camera
-- ✅ Face-api.js library is included locally (works offline)
-- ✅ All model files are included in the repository
-- 📖 **Having issues?** See [Troubleshooting Guide](TROUBLESHOOTING_FACIAL_DETECTION.md)
+### Backend Setup
 
+1. **Create a Python Virtual Environment** (Recommended)
 
-### Backend (For Database, AI Chatbot, and ML Features)
+```bash
+# On Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
+
+# On Windows
+python -m venv venv
+venv\Scripts\activate
+```
+
+2. **Install Backend Dependencies**
+
 ```bash
 cd backend
 pip install -r requirements.txt
-
-# Optional: Set OpenAI API key for AI-powered chatbot
-export OPENAI_API_KEY="your-api-key-here"
-
-# Optional: Set Flask debug mode
-export FLASK_DEBUG=true
-
-# Run the server
-python app.py
 ```
 
-## Model Training
+3. **Install Google Generative AI Package**
 
-The system includes machine learning models that can be trained to predict mental health risk levels from text.
+The Gemini API package needs to be installed separately:
 
-> 📘 **Quick Reference:** See [Quick Start Guide](docs/QUICK_START.md) for the fastest way to get started!
+```bash
+pip install google-generativeai
+```
 
-### Quick Start - Train a Model
+4. **Initialize the Database**
+
+The database will be automatically initialized when you first run the application, but you can manually initialize it:
+
+```bash
+python -c "from database import init_database; init_database()"
+```
+
+5. **Configure Environment Variables** (See [Google Gemini API Configuration](#-google-gemini-api-configuration))
+
+### Frontend Setup
+
+The frontend is a static web application and requires no build step. Simply ensure all files are in place:
+
+```bash
+# From the project root directory
+ls -la index.html script.js style.css
+ls -la assets/
+ls -la models/
+```
+
+**Note**: The facial detection models should be in the `models/` directory. If missing, face-api.js will attempt to load them from a CDN.
+
+---
+
+## 🔑 Google Gemini API Configuration
+
+### Obtaining a Gemini API Key
+
+1. **Visit Google AI Studio**: Go to [https://makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey)
+
+2. **Sign in** with your Google account
+
+3. **Create API Key**: Click "Create API Key" and select a Google Cloud project (or create a new one)
+
+4. **Copy Your API Key**: Save this key securely
+
+### Configuration Methods
+
+#### Method 1: Environment Variable (Recommended for Production)
+
+**On Linux/Mac:**
+```bash
+export GEMINI_API_KEY="your-api-key-here"
+export GEMINI_MODEL="gemini-1.5-flash"  # Optional, defaults to gemini-1.5-flash
+```
+
+**On Windows (Command Prompt):**
+```cmd
+set GEMINI_API_KEY=your-api-key-here
+set GEMINI_MODEL=gemini-1.5-flash
+```
+
+**On Windows (PowerShell):**
+```powershell
+$env:GEMINI_API_KEY="your-api-key-here"
+$env:GEMINI_MODEL="gemini-1.5-flash"
+```
+
+#### Method 2: .env File (Recommended for Development)
+
+Create a `.env` file in the `backend/` directory:
+
+```bash
+# backend/.env
+GEMINI_API_KEY=your-api-key-here
+GEMINI_MODEL=gemini-1.5-flash
+```
+
+Then install python-dotenv:
+```bash
+pip install python-dotenv
+```
+
+And add this to the top of `backend/chatbot.py`:
+```python
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+#### Method 3: Direct Code Configuration (Not Recommended for Production)
+
+**⚠️ Security Warning**: Never commit API keys to version control!
+
+Currently, the API key is hardcoded in `backend/chatbot.py` line 333:
+```python
+GEMINI_API_KEY = "AIzaSyBNKNkWQuCsuCho1XntQZcEqsy2VwC4qzA"
+```
+
+**For production use**, replace this with:
+```python
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+```
+
+### Verifying Gemini API Configuration
+
+Test your API configuration:
 
 ```bash
 cd backend
-
-# Train with built-in sample data
-python train_model.py
-
-# Train with your own dataset
-python train_model.py --data ../datasets/my_dataset.csv
-
-# Choose a specific algorithm
-python train_model.py --model random_forest
+python -c "from chatbot import MentalHealthChatbot; bot = MentalHealthChatbot(); print(bot.get_api_status())"
 ```
 
-### Available Model Types
-
-| Model | Best For | Training Speed | Accuracy |
-|-------|----------|----------------|----------|
-| **Logistic Regression** (default) | General use, quick testing | ⚡ Fast | Good |
-| **Random Forest** | Robust predictions | ⚡⚡ Moderate | Better |
-| **Gradient Boosting** | Maximum accuracy | ⚡⚡⚡ Slower | Best |
-
-### Dataset Format
-
-Create a CSV file with two columns:
-
-```csv
-text,label
-"I feel happy and optimistic",low
-"I've been feeling anxious",moderate
-"I feel hopeless and trapped",high
+Expected output:
+```json
+{
+  "gemini_available": true,
+  "api_key_configured": true,
+  "using_ai": true,
+  "model": "gemini-1.5-flash"
+}
 ```
 
-**Labels must be:** `low`, `moderate`, or `high`
+### Fallback Behavior
 
-### Training Options
+If the Gemini API is unavailable or the API key is not configured:
+- The chatbot automatically falls back to **rule-based responses**
+- Basic mental health support is still provided using pattern matching
+- No AI features, but core functionality remains operational
+
+---
+
+## 💻 Usage
+
+### Starting the Backend Server
 
 ```bash
-# Train with custom dataset
-python train_model.py --data path/to/dataset.csv
-
-# Choose model algorithm  
-python train_model.py --model logistic_regression
-python train_model.py --model random_forest
-python train_model.py --model gradient_boosting
-
-# Adjust train/test split
-python train_model.py --test-size 0.3
-
-# Test with specific texts
-python train_model.py --test-texts "I feel great" "I'm worried"
-
-# Skip testing after training
-python train_model.py --no-test
+cd backend
+python app.py
 ```
 
-### Sample Datasets
+The Flask server will start at `http://localhost:5000`
 
-We provide sample datasets in the `datasets/` directory:
-- **`sample_dataset.csv`** - 40 examples for testing
-- **`template_dataset.csv`** - Template to create your own dataset
-
-### Programmatic Training
-
-You can also train models programmatically:
-
-```python
-from ml_model import MentalHealthMLModel
-
-# Initialize model
-model = MentalHealthMLModel()
-
-# Train with custom data
-texts = ["I feel great", "I'm anxious", "I'm hopeless"]
-labels = ["low", "moderate", "high"]
-results = model.train(texts, labels, model_type="random_forest")
-
-# View results
-print(f"Accuracy: {results['accuracy']:.2%}")
-
-# Make predictions
-prediction = model.predict("I've been feeling stressed")
-print(f"Risk Level: {prediction['risk_level']}")
-print(f"Confidence: {prediction['confidence']:.2%}")
-```
-
-### Training via API
-
-Train models through REST API endpoints:
-
+**For production deployment:**
 ```bash
-# Train with sample data
-curl -X POST http://localhost:5000/api/model/train
-
-# Train with specific model type
-curl -X POST http://localhost:5000/api/model/train \
-  -H "Content-Type: application/json" \
-  -d '{"model_type": "random_forest"}'
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
-### 📖 Complete Training Guide
+### Accessing the Application
 
-For detailed instructions, see the [Model Training Guide](docs/MODEL_TRAINING.md):
-- Dataset preparation guidelines
-- Model selection advice  
-- Performance optimization
-- Best practices
-- Troubleshooting
+1. Open your web browser
+2. Navigate to the `index.html` file:
+   - **Method 1**: Open directly: `file:///path/to/Mental-Health-Detection-Using-AI/index.html`
+   - **Method 2**: Use a local web server:
+     ```bash
+     # Using Python's built-in server
+     python -m http.server 8000
+     # Then visit: http://localhost:8000
+     ```
 
-## API Endpoints
+3. **Select an assessment method** from the landing page:
+   - **AI Chatbot**: Conversational mental health support
+   - **Questionnaire**: PHQ-9 and GAD-7 assessments
+   - **Text Analysis**: NLP-based sentiment analysis
+   - **Facial Detection**: Webcam-based emotion recognition
 
-### User Management
-- `POST /api/users` - Create a new user
-- `GET /api/users/<id>` - Get user by ID
-- `GET /api/users` - List all users
+### Using the AI Chatbot
 
-### Chatbot
-- `POST /api/chat` - Send message to chatbot
-- `GET /api/chat/history/<user_id>` - Get chat history
-- `DELETE /api/chat/history/<user_id>` - Clear chat history
-- `GET /api/chat/status` - Get chatbot API status
+1. Click "Start Chatting" on the landing page
+2. Enter your name and optional details (email, age)
+3. Start conversing with the AI:
+   - Share your feelings and concerns
+   - Receive empathetic, AI-powered responses
+   - Get personalized coping strategies
+   - Access crisis resources if needed
+4. Generate a comprehensive report of your session
 
-### ML Model
-- `POST /api/model/train` - Train the ML model
-- `POST /api/model/predict` - Predict risk from text
-- `GET /api/model/info` - Get model information
+### Using Other Features
 
-### Assessments
-- `POST /api/analyze/questionnaire` - Analyze questionnaire
-- `POST /api/analyze/text` - Analyze text input
-- `POST /api/analyze/combined` - Combined analysis
-- `POST /api/assessments/<user_id>` - Save assessment
-- `GET /api/assessments/<user_id>` - Get assessment history
-- `GET /api/report/<user_id>` - Generate comprehensive report
+**Questionnaires:**
+- Answer PHQ-9 and GAD-7 questions
+- Receive instant risk assessment
+- Get personalized recommendations
 
-## Project Structure
+**Text Analysis:**
+- Write about your feelings (minimum 50 words)
+- Get NLP-based sentiment analysis
+- Identify mental health indicators
+
+**Facial Detection:**
+- Allow webcam access
+- Real-time emotion recognition
+- Track emotional patterns
+
+---
+
+## 📡 API Documentation
+
+### Base URL
+```
+http://localhost:5000/api
+```
+
+### Endpoints
+
+#### Health Check
+```http
+GET /api/health
+```
+Returns API status.
+
+#### Chatbot
+
+**Send Message**
+```http
+POST /api/chat
+Content-Type: application/json
+
+{
+  "user_id": 1,
+  "message": "I'm feeling anxious today"
+}
+```
+
+**Response:**
+```json
+{
+  "response": "I hear that you're experiencing anxiety...",
+  "emotions": ["anxious"],
+  "topics": ["health"],
+  "risk_level": "moderate",
+  "using_ai": true
+}
+```
+
+**Get Chat History**
+```http
+GET /api/chat/history/{user_id}?limit=50
+```
+
+**Get Chat Analysis**
+```http
+GET /api/chat/analysis/{user_id}
+```
+
+**Check Chatbot Status**
+```http
+GET /api/chat/status
+```
+
+Returns:
+```json
+{
+  "gemini_available": true,
+  "api_key_configured": true,
+  "using_ai": true,
+  "model": "gemini-1.5-flash"
+}
+```
+
+#### User Management
+
+**Create User**
+```http
+POST /api/users
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "age": 25
+}
+```
+
+**Get User**
+```http
+GET /api/users/{user_id}
+```
+
+**List All Users**
+```http
+GET /api/users
+```
+
+#### Assessments
+
+**Analyze Questionnaire**
+```http
+POST /api/analyze/questionnaire
+Content-Type: application/json
+
+{
+  "responses": {
+    "phq9": [0, 1, 2, 3, 0, 1, 2, 1, 0],
+    "gad7": [0, 1, 2, 3, 0, 1, 2]
+  }
+}
+```
+
+**Analyze Text**
+```http
+POST /api/analyze/text
+Content-Type: application/json
+
+{
+  "text": "I've been feeling really down lately..."
+}
+```
+
+**Combined Analysis**
+```http
+POST /api/analyze/combined
+Content-Type: application/json
+
+{
+  "responses": { "phq9": [...], "gad7": [...] },
+  "text": "...",
+  "facial_emotion": "sad"
+}
+```
+
+**Get Recommendations**
+```http
+POST /api/recommendations
+Content-Type: application/json
+
+{
+  "risk_level": "moderate",
+  "conditions": ["depression", "anxiety"]
+}
+```
+
+#### Machine Learning
+
+**Train Model**
+```http
+POST /api/model/train
+Content-Type: application/json
+
+{
+  "model_type": "logistic_regression",
+  "texts": ["sample text 1", ...],
+  "labels": ["low", "moderate", ...]
+}
+```
+
+**Predict from Text**
+```http
+POST /api/model/predict
+Content-Type: application/json
+
+{
+  "text": "I feel overwhelmed with everything"
+}
+```
+
+**Get Model Info**
+```http
+GET /api/model/info
+```
+
+#### Reports
+
+**Generate User Report**
+```http
+GET /api/report/{user_id}
+```
+
+Returns comprehensive mental health report including:
+- User profile
+- Conversation summary
+- Detected emotions and topics
+- Risk assessment
+- Personalized recommendations
+- Recent assessment history
+
+---
+
+## 📁 Project Structure
 
 ```
 Mental-Health-Detection-Using-AI/
-├── index.html              # Main HTML file
-├── style.css               # Stylesheet with theme support
-├── script.js               # Frontend JavaScript
-├── README.md               # Project documentation
-├── TROUBLESHOOTING_FACIAL_DETECTION.md  # Facial detection troubleshooting guide
-├── verify-setup.sh         # Setup verification script
-├── assets/
-│   ├── images/             # Image assets
-│   └── js/
-│       └── face-api.min.js # Face-API.js library (local, ~649KB)
-├── models/                 # Face-API.js models for facial detection (~7MB)
-│   ├── README.md           # Models documentation
-│   ├── tiny_face_detector_model-*
+│
+├── backend/                      # Backend application
+│   ├── app.py                   # Main Flask application
+│   ├── chatbot.py               # Google Gemini AI chatbot
+│   ├── mental_health_predictor.py  # Questionnaire scoring
+│   ├── text_analyzer.py         # NLP text analysis
+│   ├── ml_model.py              # Machine learning models
+│   ├── database.py              # SQLite database operations
+│   ├── train_model.py           # ML model training script
+│   ├── examples_training.py     # Training data examples
+│   └── requirements.txt         # Python dependencies
+│
+├── assets/                      # Static assets
+│   ├── images/                  # Images and illustrations
+│   └── js/                      # JavaScript libraries
+│       └── face-api.min.js      # Facial recognition library
+│
+├── models/                      # Face-api.js models
+│   ├── face_expression_model-*
 │   ├── face_landmark_68_model-*
 │   ├── face_recognition_model-*
-│   └── face_expression_model-*
-├── backend/
-│   ├── app.py              # Flask API server
-│   ├── database.py         # SQLite database operations
-│   ├── chatbot.py          # AI chatbot module
-│   ├── ml_model.py         # ML model training/prediction
-│   ├── train_model.py      # Standalone training script
-│   ├── mental_health_predictor.py  # Clinical scale scoring
-│   ├── text_analyzer.py    # NLP text analysis
-│   ├── requirements.txt    # Python dependencies
-│   └── models/             # Trained ML models (auto-generated)
-├── datasets/               # Training datasets
-│   ├── README.md           # Dataset documentation
-│   ├── sample_dataset.csv  # Sample training data (40 examples)
-│   └── template_dataset.csv # Empty template for custom datasets
-├── docs/
-│   └── MODEL_TRAINING.md   # Comprehensive model training guide
-└── mental_health.db        # SQLite database (auto-generated)
+│   └── tiny_face_detector_model-*
+│
+├── datasets/                    # Training datasets
+│   └── README.md
+│
+├── docs/                        # Additional documentation
+│   ├── MODEL_TRAINING.md
+│   ├── OFFLINE_SETUP.md
+│   └── QUICK_START.md
+│
+├── index.html                   # Main HTML file
+├── script.js                    # Frontend JavaScript
+├── style.css                    # Styling
+├── verify-setup.sh              # Setup verification script
+├── .gitignore                   # Git ignore rules
+└── README.md                    # This file
 ```
 
-## Environment Variables
+---
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `OPENAI_API_KEY` | OpenAI API key for AI chatbot | No (falls back to rule-based) |
-| `OPENAI_MODEL` | OpenAI model to use (default: gpt-3.5-turbo) | No |
-| `FLASK_DEBUG` | Enable Flask debug mode | No |
-| `DATABASE_PATH` | Custom database file path | No |
-| `MODEL_DIR` | Directory for ML models | No |
+## 🔐 Environment Variables
 
-## Usage
+Create a `.env` file in the `backend/` directory:
 
-1. **Choose an Assessment Method**:
-   - **AI Chatbot**: Chat for personalized support and get reports
-   - **Questionnaire**: Answer PHQ-9 and GAD-7 questions
-   - **Text Analysis**: Write about your feelings for NLP analysis
-   - **Facial Detection**: Use webcam for emotion recognition
+```bash
+# Google Gemini API Configuration
+GEMINI_API_KEY=your-api-key-here
+GEMINI_MODEL=gemini-1.5-flash
 
-2. **View Results**: Get instant feedback including:
-   - Severity scores and classifications
-   - Risk level assessment
-   - Detected concerns
+# Flask Configuration
+FLASK_DEBUG=false
+FLASK_ENV=production
 
-3. **Get Recommendations**: Receive personalized:
-   - Coping strategies
-   - Breathing exercises
-   - Professional resources
+# Database Configuration
+DATABASE_PATH=mental_health.db
 
-4. **Generate Reports**: Download comprehensive mental health reports
+# Model Configuration
+MODEL_DIR=models
+```
 
-## Clinical Scales Used
+**Important**: Add `.env` to your `.gitignore` to prevent committing sensitive data:
+```bash
+echo ".env" >> .gitignore
+```
 
-### PHQ-9 Scoring (Depression)
-- 0-4: Minimal depression
-- 5-9: Mild depression
-- 10-14: Moderate depression
-- 15-19: Moderately severe depression
-- 20-27: Severe depression
+---
 
-### GAD-7 Scoring (Anxiety)
-- 0-4: Minimal anxiety
-- 5-9: Mild anxiety
-- 10-14: Moderate anxiety
-- 15-21: Severe anxiety
+## 🗄 Database Schema
 
-## Privacy & Security
+The application uses SQLite with the following schema:
 
-- **Local Processing**: Questionnaire and basic analysis in browser
-- **Optional Backend**: Database storage requires backend server
-- **Data Encryption**: SQLite database stored locally
-- **No External Tracking**: No analytics or tracking scripts
-- **API Key Security**: OpenAI key stored as environment variable
+### Users Table
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT,
+    age INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-## Troubleshooting
+### Chat Messages Table
+```sql
+CREATE TABLE chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    role TEXT NOT NULL,              -- 'user' or 'bot'
+    content TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sentiment TEXT,                  -- risk level detected
+    emotions TEXT,                   -- JSON array of emotions
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+```
 
-### Facial Detection Issues
+### Assessments Table
+```sql
+CREATE TABLE assessments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    assessment_type TEXT NOT NULL,   -- 'questionnaire', 'text', 'combined'
+    scores TEXT,                     -- JSON object of scores
+    risk_level TEXT,                 -- 'low', 'moderate', 'high'
+    conditions TEXT,                 -- JSON array of detected conditions
+    recommendations TEXT,            -- JSON array of recommendations
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+```
 
-⚠️ **Having issues with facial detection?** See the comprehensive [Troubleshooting Guide](TROUBLESHOOTING_FACIAL_DETECTION.md) for detailed solutions.
+### Chat Analysis Table
+```sql
+CREATE TABLE chat_analysis (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    message_count INTEGER DEFAULT 0,
+    detected_emotions TEXT,          -- JSON array
+    topics TEXT,                     -- JSON array
+    overall_sentiment TEXT,          -- 'positive', 'negative', 'neutral'
+    risk_level TEXT,                 -- 'low', 'moderate', 'high'
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+```
 
-**Quick Fixes:**
+---
 
-**Problem: "Failed to load AI models" despite having internet**
-- **Cause**: CDN blocked, or not using web server, or CORS issues
-- **Solution**: 
-  1. ✅ Use a web server: `python -m http.server 8080`
-  2. ✅ Visit `http://localhost:8080` (NOT `file://`)
-  3. ✅ Disable ad-blockers temporarily
-  4. ✅ Check browser console (F12) for specific errors
-  5. ✅ Face-api.js now loads locally (no CDN required!)
+## 🤖 Machine Learning Models
 
-**Problem: "Library not loaded"**
-- **Cause**: CDN blocked or local file missing
-- **Solution**: 
-  - Verify `assets/js/face-api.min.js` exists (649KB)
-  - Disable ad-blockers/firewalls blocking CDN
-  - Refresh page after disabling blockers
+### Supported Algorithms
 
-**Problem: "Camera access denied" or "Unable to access camera"**
-- **Solution 1**: Grant camera permissions in your browser
-  - Chrome: Click the camera icon in the address bar → Allow
-  - Firefox: Click the shield/lock icon → Permissions → Camera → Allow
-  - Safari: Safari menu → Settings for This Website → Camera → Allow
-- **Solution 2**: Ensure you're using HTTPS or localhost
-  - Camera access requires a secure context
-  - Use `python -m http.server 8080` and visit `http://localhost:8080`
-- **Solution 3**: Check if another application is using the camera
-  - Close other video conferencing apps (Zoom, Teams, etc.)
-  - Restart your browser
+1. **Logistic Regression** (Default)
+   - Fast training and prediction
+   - Interpretable coefficients
+   - Good for binary and multiclass classification
 
-**Problem: "No camera found"**
-- **Solution**: Connect a webcam device and refresh the page
-- Verify your camera works in other applications
+2. **Random Forest**
+   - Ensemble learning method
+   - Handles non-linear relationships
+   - Feature importance analysis
 
-**Problem: "Camera initialization timed out"**
-- **Solution**: 
-  - Refresh the page and try again
-  - Check if your camera drivers are up to date
-  - Try a different browser
+3. **Gradient Boosting**
+   - High accuracy
+   - Robust to overfitting
+   - Slower training time
 
-📖 **For detailed troubleshooting**, see [TROUBLESHOOTING_FACIAL_DETECTION.md](TROUBLESHOOTING_FACIAL_DETECTION.md)
+### Training a Model
 
-### Backend/API Issues
+```bash
+cd backend
+python train_model.py
+```
 
-**Problem: Backend server won't start**
-- **Solution**: Ensure all dependencies are installed: `pip install -r backend/requirements.txt`
-- Check if port 5000 is already in use
+Or via API:
+```bash
+curl -X POST http://localhost:5000/api/model/train \
+  -H "Content-Type: application/json" \
+  -d '{"model_type": "logistic_regression"}'
+```
 
-**Problem: OpenAI chatbot not working**
-- **Solution**: The app falls back to rule-based responses if no API key is set
-- Set `OPENAI_API_KEY` environment variable for AI-powered responses
+### Model Persistence
 
-## Disclaimer
+Trained models are saved in `backend/models/`:
+- `mental_health_model.joblib`: Trained classifier
+- `vectorizer.joblib`: TF-IDF vectorizer
 
-⚠️ **This application is NOT a substitute for professional mental health care.**
+---
 
-- It is designed for educational and early detection purposes only
-- If you are experiencing a mental health crisis, please contact emergency services
-- Always consult with qualified mental health professionals for diagnosis and treatment
+## 🐛 Troubleshooting
 
-## Emergency Resources
+### Issue: Gemini API Not Working
 
-- **National Suicide Prevention Lifeline**: 988 or 1-800-273-8255
-- **Crisis Text Line**: Text HOME to 741741
-- **SAMHSA National Helpline**: 1-800-662-4357
+**Symptoms**: Chatbot only provides rule-based responses
 
-## License
+**Solutions**:
+1. Verify API key is set correctly:
+   ```bash
+   python -c "import os; print(os.environ.get('GEMINI_API_KEY'))"
+   ```
 
-This project is for educational purposes. Please use responsibly.
+2. Check API status:
+   ```bash
+   curl http://localhost:5000/api/chat/status
+   ```
 
-## References
+3. Verify google-generativeai is installed:
+   ```bash
+   pip list | grep google-generativeai
+   ```
+   If not installed:
+   ```bash
+   pip install google-generativeai
+   ```
 
-- PHQ-9: Kroenke K, Spitzer RL, Williams JB. The PHQ-9: validity of a brief depression severity measure.
-- GAD-7: Spitzer RL, Kroenke K, Williams JB, Löwe B. A brief measure for assessing generalized anxiety disorder.
-- face-api.js: JavaScript face detection and recognition library
-- DAIC-WOZ Depression Dataset
-- CLPsych Shared Task papers
-- OpenAI GPT API Documentation
-- Scikit-learn Machine Learning Library
+4. Check for API errors in backend logs:
+   ```bash
+   # Backend console should show any API errors
+   ```
+
+5. Test API key directly:
+   ```python
+   import google.generativeai as genai
+   genai.configure(api_key="your-key-here")
+   model = genai.GenerativeModel("gemini-1.5-flash")
+   response = model.generate_content("Hello")
+   print(response.text)
+   ```
+
+### Issue: ModuleNotFoundError
+
+**Solution**: Install missing dependencies:
+```bash
+cd backend
+pip install -r requirements.txt
+pip install google-generativeai
+```
+
+### Issue: Database Errors
+
+**Solution**: Reinitialize the database:
+```bash
+cd backend
+rm mental_health.db  # Delete old database
+python -c "from database import init_database; init_database()"
+```
+
+### Issue: CORS Errors
+
+**Solution**: Ensure Flask-CORS is properly configured in `app.py`:
+```python
+from flask_cors import CORS
+app = Flask(__name__)
+CORS(app)
+```
+
+### Issue: Facial Detection Not Working
+
+**Solutions**:
+1. Ensure webcam permissions are granted
+2. Check that models are loaded:
+   - Look for `models/` directory
+   - Verify model files exist
+3. Use HTTPS or localhost (required for webcam access)
+4. Check browser console for errors
+
+### Issue: Port Already in Use
+
+**Solution**: Use a different port:
+```bash
+python app.py  # Modify port in app.py
+# Or
+flask run --port 5001
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+### Reporting Bugs
+1. Check existing issues first
+2. Create a detailed bug report with:
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Screenshots if applicable
+   - System information
+
+### Suggesting Features
+1. Open an issue with the `enhancement` label
+2. Describe the feature and its benefits
+3. Provide examples or mockups if possible
+
+### Pull Requests
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Open a Pull Request
+
+### Code Style Guidelines
+- **Python**: Follow PEP 8
+- **JavaScript**: Use ES6+ features, consistent indentation
+- **Documentation**: Update README for new features
+- **Comments**: Write clear, helpful comments
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Credits
+
+### Project Creator
+- **Hereakash** - [GitHub Profile](https://github.com/Hereakash)
+
+### Technologies & APIs
+- **Google Gemini API** - AI-powered conversational responses
+- **face-api.js** - Facial expression recognition
+- **Flask** - Backend web framework
+- **Scikit-learn** - Machine learning capabilities
+
+### Mental Health Scales
+- **PHQ-9**: Patient Health Questionnaire for depression
+- **GAD-7**: Generalized Anxiety Disorder scale
+
+### Inspiration & Resources
+- National Institute of Mental Health (NIMH)
+- World Health Organization (WHO) Mental Health Resources
+- Evidence-based mental health interventions
+
+---
+
+## ⚠️ Disclaimer
+
+**This application is intended for educational and informational purposes only.** It is **NOT** a substitute for professional mental health diagnosis, treatment, or advice. 
+
+- **Not Medical Advice**: The assessments and recommendations provided by this application are not medical diagnoses
+- **Emergency Situations**: If you are experiencing a mental health crisis, please contact emergency services immediately:
+  - **US**: National Suicide Prevention Lifeline: 988
+  - **US**: Crisis Text Line: Text HOME to 741741
+  - **International**: [IASP Crisis Centres](https://www.iasp.info/resources/Crisis_Centres/)
+
+- **Professional Help**: Always consult with qualified mental health professionals for diagnosis and treatment
+- **Data Privacy**: While we prioritize privacy, ensure you follow best practices for securing sensitive health data
+
+---
+
+## 📞 Support & Contact
+
+- **Issues**: [GitHub Issues](https://github.com/Hereakash/Mental-Health-Detection-Using-AI/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Hereakash/Mental-Health-Detection-Using-AI/discussions)
+- **Email**: Create an issue for contact information
+
+---
+
+## 🌟 Star This Repository
+
+If you find this project helpful, please consider giving it a ⭐ on GitHub!
+
+---
+
+<div align="center">
+
+**Made with ❤️ for Mental Health Awareness**
+
+*Remember: It's okay to not be okay. Reach out for help when you need it.*
+
+</div>
