@@ -279,7 +279,7 @@ load_dotenv()
 
 Currently, the API key is hardcoded in `backend/chatbot.py` line 333:
 ```python
-GEMINI_API_KEY = "AIzaSyBNKNkWQuCsuCho1XntQZcEqsy2VwC4qzA"
+GEMINI_API_KEY = "API_KEY"
 ```
 
 **For production use**, replace this with:
