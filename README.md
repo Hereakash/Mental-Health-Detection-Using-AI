@@ -867,6 +867,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ### Project Creator
 - **Hereakash** - [GitHub Profile](https://github.com/Hereakash)
 - **Deepanshu-kesharwani** - [GitHub Profile](https://github.com/Deepanshu-kesharwani)
+- **Devax27** - [GitHub Profile](https://github.com/Devax27)
 
 ### Technologies & APIs
 - **Google Gemini API** - AI-powered conversational responses
