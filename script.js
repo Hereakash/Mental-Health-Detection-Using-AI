@@ -191,7 +191,7 @@ function showConfirmationModal(title, message) {
         if (modalTitle) modalTitle.textContent = title;
         if (modalDescription) modalDescription.textContent = message;
         
-        let escapeHandler, outsideClickHandler, confirmHandler, cancelHandler;
+        let escapeHandler, outsideClickHandler, confirmHandler, cancelHandler, contentClickHandler;
         
         const cleanup = () => {
             // Remove all event listeners
@@ -199,23 +199,48 @@ function showConfirmationModal(title, message) {
             if (outsideClickHandler && confirmationModal) confirmationModal.removeEventListener('click', outsideClickHandler);
             if (confirmHandler && modalConfirmBtn) modalConfirmBtn.removeEventListener('click', confirmHandler);
             if (cancelHandler && modalCancelBtn) modalCancelBtn.removeEventListener('click', cancelHandler);
+            if (contentClickHandler) {
+                const modalContent = confirmationModal?.querySelector('.modal-content');
+                if (modalContent) modalContent.removeEventListener('click', contentClickHandler);
+            }
         };
         
-        confirmHandler = () => {
+        confirmHandler = (e) => {
+            console.log('Confirm button clicked'); // Debug log
+            e.stopPropagation(); // Prevent event from bubbling to overlay
             hideConfirmationModal();
             cleanup();
             resolve(true);
         };
         
-        cancelHandler = () => {
+        cancelHandler = (e) => {
+            console.log('Cancel button clicked'); // Debug log
+            e.stopPropagation(); // Prevent event from bubbling to overlay
             hideConfirmationModal();
             cleanup();
             resolve(false);
         };
         
-        // Add event listeners
-        if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', confirmHandler);
-        if (modalCancelBtn) modalCancelBtn.addEventListener('click', cancelHandler);
+        // Prevent clicks inside modal content from closing the modal
+        contentClickHandler = (e) => {
+            e.stopPropagation(); // Stop clicks inside modal from reaching overlay
+        };
+        
+        // Add event listeners to modal buttons
+        if (modalConfirmBtn) {
+            console.log('Adding confirm button event listener'); // Debug log
+            modalConfirmBtn.addEventListener('click', confirmHandler);
+        }
+        if (modalCancelBtn) {
+            console.log('Adding cancel button event listener'); // Debug log
+            modalCancelBtn.addEventListener('click', cancelHandler);
+        }
+        
+        // Prevent clicks inside modal content from closing the modal
+        const modalContent = confirmationModal?.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.addEventListener('click', contentClickHandler);
+        }
         
         // Handle escape key
         escapeHandler = (e) => {
@@ -230,6 +255,7 @@ function showConfirmationModal(title, message) {
         // Handle clicking outside modal
         outsideClickHandler = (e) => {
             if (e.target === confirmationModal) {
+                console.log('Clicked outside modal'); // Debug log
                 hideConfirmationModal();
                 cleanup();
                 resolve(false);
