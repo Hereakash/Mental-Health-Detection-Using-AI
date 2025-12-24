@@ -1688,6 +1688,8 @@ footer .container {
     border-radius: 15px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: modalSlideIn 0.3s ease;
+    pointer-events: auto;
+    position: relative;
 }
 
 @keyframes modalSlideIn {
@@ -1722,6 +1724,8 @@ footer .container {
 
 .modal-actions .btn {
     min-width: 100px;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 @media (max-width: 768px) {

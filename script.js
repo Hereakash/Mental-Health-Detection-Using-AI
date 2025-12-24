@@ -191,7 +191,8 @@ function showConfirmationModal(title, message) {
         if (modalTitle) modalTitle.textContent = title;
         if (modalDescription) modalDescription.textContent = message;
         
-        let escapeHandler, outsideClickHandler, confirmHandler, cancelHandler;
+        let escapeHandler, outsideClickHandler, confirmHandler, cancelHandler, contentClickHandler;
+        const modalContent = confirmationModal?.querySelector('.modal-content');
         
         const cleanup = () => {
             // Remove all event listeners
@@ -199,23 +200,32 @@ function showConfirmationModal(title, message) {
             if (outsideClickHandler && confirmationModal) confirmationModal.removeEventListener('click', outsideClickHandler);
             if (confirmHandler && modalConfirmBtn) modalConfirmBtn.removeEventListener('click', confirmHandler);
             if (cancelHandler && modalCancelBtn) modalCancelBtn.removeEventListener('click', cancelHandler);
+            if (contentClickHandler && modalContent) modalContent.removeEventListener('click', contentClickHandler);
         };
         
-        confirmHandler = () => {
+        confirmHandler = (e) => {
+            e.stopPropagation(); // Prevent event from bubbling to overlay
             hideConfirmationModal();
             cleanup();
             resolve(true);
         };
         
-        cancelHandler = () => {
+        cancelHandler = (e) => {
+            e.stopPropagation(); // Prevent event from bubbling to overlay
             hideConfirmationModal();
             cleanup();
             resolve(false);
         };
         
+        // Prevent clicks inside modal content from closing the modal
+        contentClickHandler = (e) => {
+            e.stopPropagation();
+        };
+        
         // Add event listeners
         if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', confirmHandler);
         if (modalCancelBtn) modalCancelBtn.addEventListener('click', cancelHandler);
+        if (modalContent) modalContent.addEventListener('click', contentClickHandler);
         
         // Handle escape key
         escapeHandler = (e) => {
