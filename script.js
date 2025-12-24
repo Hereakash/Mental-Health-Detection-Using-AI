@@ -221,22 +221,16 @@ function showConfirmationModal(title, message) {
         
         // Prevent clicks inside modal content from closing the modal
         contentClickHandler = (e) => {
-            e.stopPropagation(); // Stop clicks inside modal from reaching overlay
+            e.stopPropagation();
         };
         
-        // Add event listeners to modal buttons
-        if (modalConfirmBtn) {
-            modalConfirmBtn.addEventListener('click', confirmHandler);
-        }
-        if (modalCancelBtn) {
-            modalCancelBtn.addEventListener('click', cancelHandler);
-        }
+        // Add event listeners
+        if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', confirmHandler);
+        if (modalCancelBtn) modalCancelBtn.addEventListener('click', cancelHandler);
         
-        // Prevent clicks inside modal content from closing the modal
+        // Prevent clicks inside modal content from propagating to overlay
         const modalContent = confirmationModal?.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.addEventListener('click', contentClickHandler);
-        }
+        if (modalContent) modalContent.addEventListener('click', contentClickHandler);
         
         // Handle escape key
         escapeHandler = (e) => {
