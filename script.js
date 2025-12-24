@@ -206,7 +206,6 @@ function showConfirmationModal(title, message) {
         };
         
         confirmHandler = (e) => {
-            console.log('Confirm button clicked'); // Debug log
             e.stopPropagation(); // Prevent event from bubbling to overlay
             hideConfirmationModal();
             cleanup();
@@ -214,7 +213,6 @@ function showConfirmationModal(title, message) {
         };
         
         cancelHandler = (e) => {
-            console.log('Cancel button clicked'); // Debug log
             e.stopPropagation(); // Prevent event from bubbling to overlay
             hideConfirmationModal();
             cleanup();
@@ -228,11 +226,9 @@ function showConfirmationModal(title, message) {
         
         // Add event listeners to modal buttons
         if (modalConfirmBtn) {
-            console.log('Adding confirm button event listener'); // Debug log
             modalConfirmBtn.addEventListener('click', confirmHandler);
         }
         if (modalCancelBtn) {
-            console.log('Adding cancel button event listener'); // Debug log
             modalCancelBtn.addEventListener('click', cancelHandler);
         }
         
@@ -255,7 +251,6 @@ function showConfirmationModal(title, message) {
         // Handle clicking outside modal
         outsideClickHandler = (e) => {
             if (e.target === confirmationModal) {
-                console.log('Clicked outside modal'); // Debug log
                 hideConfirmationModal();
                 cleanup();
                 resolve(false);
