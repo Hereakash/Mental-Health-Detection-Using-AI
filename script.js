@@ -192,6 +192,7 @@ function showConfirmationModal(title, message) {
         if (modalDescription) modalDescription.textContent = message;
         
         let escapeHandler, outsideClickHandler, confirmHandler, cancelHandler, contentClickHandler;
+        const modalContent = confirmationModal?.querySelector('.modal-content');
         
         const cleanup = () => {
             // Remove all event listeners
@@ -199,10 +200,7 @@ function showConfirmationModal(title, message) {
             if (outsideClickHandler && confirmationModal) confirmationModal.removeEventListener('click', outsideClickHandler);
             if (confirmHandler && modalConfirmBtn) modalConfirmBtn.removeEventListener('click', confirmHandler);
             if (cancelHandler && modalCancelBtn) modalCancelBtn.removeEventListener('click', cancelHandler);
-            if (contentClickHandler) {
-                const modalContent = confirmationModal?.querySelector('.modal-content');
-                if (modalContent) modalContent.removeEventListener('click', contentClickHandler);
-            }
+            if (contentClickHandler && modalContent) modalContent.removeEventListener('click', contentClickHandler);
         };
         
         confirmHandler = (e) => {
@@ -227,9 +225,6 @@ function showConfirmationModal(title, message) {
         // Add event listeners
         if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', confirmHandler);
         if (modalCancelBtn) modalCancelBtn.addEventListener('click', cancelHandler);
-        
-        // Prevent clicks inside modal content from propagating to overlay
-        const modalContent = confirmationModal?.querySelector('.modal-content');
         if (modalContent) modalContent.addEventListener('click', contentClickHandler);
         
         // Handle escape key
